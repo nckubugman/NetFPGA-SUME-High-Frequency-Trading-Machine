@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Webtalk v2016.1 (64-bit)
+# SW Build 1538259 on Fri Apr  8 15:45:23 MDT 2016
+# IP Build 1537824 on Fri Apr  8 04:28:57 MDT 2016
+# Start of session at: Thu Jun 21 19:32:00 2018
+# Process ID: 23624
+# Current directory: /root/NetFPGA-SUME-live-master/lib/hw/std/cores/router_output_port_lookup_v1_0_0
+# Command line: wbtcv -mode batch -source /root/NetFPGA-SUME-live-master/lib/hw/std/cores/router_output_port_lookup_v1_0_0/synth/router_output_port_lookup.hw/webtalk/labtool_webtalk.tcl -notrace
+# Log file: /root/NetFPGA-SUME-live-master/lib/hw/std/cores/router_output_port_lookup_v1_0_0/webtalk.log
+# Journal file: /root/NetFPGA-SUME-live-master/lib/hw/std/cores/router_output_port_lookup_v1_0_0/webtalk.jou
+#-----------------------------------------------------------
+source /root/NetFPGA-SUME-live-master/lib/hw/std/cores/router_output_port_lookup_v1_0_0/synth/router_output_port_lookup.hw/webtalk/labtool_webtalk.tcl -notrace

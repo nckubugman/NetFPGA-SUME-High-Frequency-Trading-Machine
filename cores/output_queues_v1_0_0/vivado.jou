@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Mon Sep  3 15:22:38 2018
+# Process ID: 9311
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/output_queues_v1_0_0
+# Command line: vivado -mode batch -source output_queues.tcl
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/output_queues_v1_0_0/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/output_queues_v1_0_0/vivado.jou
+#-----------------------------------------------------------
+source output_queues.tcl

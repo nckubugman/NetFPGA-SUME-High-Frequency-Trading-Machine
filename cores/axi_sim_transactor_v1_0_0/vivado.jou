@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Jul 17 12:07:04 2018
+# Process ID: 3682
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/axi_sim_transactor_v1_0_0
+# Command line: vivado -mode batch -source axi_sim_transactor.tcl
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/axi_sim_transactor_v1_0_0/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/axi_sim_transactor_v1_0_0/vivado.jou
+#-----------------------------------------------------------
+source axi_sim_transactor.tcl

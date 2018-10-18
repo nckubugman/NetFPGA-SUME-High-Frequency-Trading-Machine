@@ -1,0 +1,136 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Jul 17 12:06:24 2018
+# Process ID: 3487
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/nf_axis_converter_v1_0_0
+# Command line: vivado -mode batch -source nf_axis_converter.tcl
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/nf_axis_converter_v1_0_0/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/nf_axis_converter_v1_0_0/vivado.jou
+#-----------------------------------------------------------
+source nf_axis_converter.tcl
+# set design nf_axis_converter
+# set top nf_axis_converter
+# set device xc7vx690t-3-ffg1761
+# set proj_dir ./ip_proj
+# set ip_version 1.00
+# set lib_name NetFPGA
+# create_project -name ${design} -force -dir "./${proj_dir}" -part ${device} -ip
+# set_property source_mgmt_mode All [current_project]  
+# set_property top ${top} [current_fileset]
+# set_property ip_repo_paths $::env(SUME_FOLDER)/lib/hw/  [current_fileset]
+# puts "Creating AXIS Converter IP"
+Creating AXIS Converter IP
+# update_ip_catalog
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/root/NetFPGA-SUME-live/lib/hw'.
+WARNING: [IP_Flow 19-3656] If you move the project, the path for repository '/root/NetFPGA-SUME-live/lib/hw' may become invalid. A better location for the repository would be in a path adjacent to the project. (Current project location is '/root/NetFPGA-SUME-live/lib/hw/std/cores/nf_axis_converter_v1_0_0/ip_proj'.)
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/Vivado/2016.4/data/ip'.
+# read_verilog "./hdl/nf_axis_converter.v"
+# update_compile_order -fileset sources_1
+# update_compile_order -fileset sim_1
+# ipx::package_project
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'local_sum' has a dependency on the module local parameter or undefined parameter 'LENGTH_COUNTER_WIDTH'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter' has a dependency on the module local parameter or undefined parameter 'M_S_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter_next' has a dependency on the module local parameter or undefined parameter 'M_S_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter_plus_1' has a dependency on the module local parameter or undefined parameter 'M_S_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter' has a dependency on the module local parameter or undefined parameter 'S_M_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter_next' has a dependency on the module local parameter or undefined parameter 'S_M_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter_plus_1' has a dependency on the module local parameter or undefined parameter 'S_M_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter' has a dependency on the module local parameter or undefined parameter 'S_M_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter_next' has a dependency on the module local parameter or undefined parameter 'S_M_RATIO_COUNT'.
+WARNING: [IP_Flow 19-587] [HDL Parser] HDL port or parameter 'counter_plus_1' has a dependency on the module local parameter or undefined parameter 'S_M_RATIO_COUNT'.
+INFO: [IP_Flow 19-2228] Inferred bus interface 'm_axis' of definition 'xilinx.com:interface:axis:1.0'.
+INFO: [IP_Flow 19-2228] Inferred bus interface 's_axis' of definition 'xilinx.com:interface:axis:1.0'.
+INFO: [IP_Flow 19-4753] Inferred signal 'reset' from port 'axi_resetn' as interface 'axi_resetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 'axi_resetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4753] Inferred signal 'clock' from port 'axi_aclk' as interface 'axi_aclk'.
+INFO: [IP_Flow 19-4728] Bus Interface 'axi_aclk': Added interface parameter 'ASSOCIATED_RESET' with value 'axi_resetn'.
+# set_property name ${design} [ipx::current_core]
+# set_property library ${lib_name} [ipx::current_core]
+# set_property vendor_display_name {NetFPGA} [ipx::current_core]
+# set_property company_url {www.netfpga.org} [ipx::current_core]
+# set_property vendor {NetFPGA} [ipx::current_core]
+# set_property supported_families {{virtex7} {Production}} [ipx::current_core]
+# set_property taxonomy {{/NetFPGA/Generic}} [ipx::current_core]
+# set_property version ${ip_version} [ipx::current_core]
+# set_property display_name ${design} [ipx::current_core]
+# set_property description ${design} [ipx::current_core]
+# ipx::add_subcore NetFPGA:NetFPGA:fallthrough_small_fifo:1.00 [ipx::get_file_groups xilinx_anylanguagesynthesis -of_objects [ipx::current_core]]
+# ipx::add_subcore NetFPGA:NetFPGA:fallthrough_small_fifo:1.00 [ipx::get_file_groups xilinx_anylanguagebehavioralsimulation -of_objects [ipx::current_core]]
+# ipx::infer_user_parameters [ipx::current_core]
+# ipx::add_user_parameter {C_M_AXIS_DATA_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_M_AXIS_DATA_WIDTH]
+# set_property display_name {C_M_AXIS_DATA_WIDTH} [ipx::get_user_parameters C_M_AXIS_DATA_WIDTH]
+# set_property value {64} [ipx::get_user_parameters C_M_AXIS_DATA_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_M_AXIS_DATA_WIDTH]
+# ipx::add_user_parameter {C_S_AXIS_DATA_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_S_AXIS_DATA_WIDTH]
+# set_property display_name {C_S_AXIS_DATA_WIDTH} [ipx::get_user_parameters C_S_AXIS_DATA_WIDTH]
+# set_property value {256} [ipx::get_user_parameters C_S_AXIS_DATA_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_S_AXIS_DATA_WIDTH]
+# ipx::add_user_parameter {C_M_AXIS_TUSER_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_M_AXIS_TUSER_WIDTH]
+# set_property display_name {C_M_AXIS_TUSER_WIDTH} [ipx::get_user_parameters C_M_AXIS_TUSER_WIDTH]
+# set_property value {128} [ipx::get_user_parameters C_M_AXIS_TUSER_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_M_AXIS_TUSER_WIDTH]
+# ipx::add_user_parameter {C_S_AXIS_TUSER_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_S_AXIS_TUSER_WIDTH]
+# set_property display_name {C_S_AXIS_TUSER_WIDTH} [ipx::get_user_parameters C_S_AXIS_TUSER_WIDTH]
+# set_property value {128} [ipx::get_user_parameters C_S_AXIS_TUSER_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_S_AXIS_TUSER_WIDTH]
+# ipx::add_user_parameter {C_LEN_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_LEN_WIDTH]
+# set_property display_name {C_LEN_WIDTH} [ipx::get_user_parameters C_LEN_WIDTH]
+# set_property value {16} [ipx::get_user_parameters C_LEN_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_LEN_WIDTH]
+# ipx::add_user_parameter {C_SPT_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_SPT_WIDTH]
+# set_property display_name {C_SPT_WIDTH} [ipx::get_user_parameters C_SPT_WIDTH]
+# set_property value {8} [ipx::get_user_parameters C_SPT_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_SPT_WIDTH]
+# ipx::add_user_parameter {C_DPT_WIDTH} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_DPT_WIDTH]
+# set_property display_name {C_DPT_WIDTH} [ipx::get_user_parameters C_DPT_WIDTH]
+# set_property value {8} [ipx::get_user_parameters C_DPT_WIDTH]
+# set_property value_format {long} [ipx::get_user_parameters C_DPT_WIDTH]
+# ipx::add_user_parameter {C_DEFAULT_VALUE_ENABLE} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_DEFAULT_VALUE_ENABLE]
+# set_property display_name {C_DEFAULT_VALUE_ENABLE} [ipx::get_user_parameters C_DEFAULT_VALUE_ENABLE]
+# set_property value {0} [ipx::get_user_parameters C_DEFAULT_VALUE_ENABLE]
+# set_property value_format {long} [ipx::get_user_parameters C_DEFAULT_VALUE_ENABLE]
+# ipx::add_user_parameter {C_DEFAULT_SRC_PORT} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_DEFAULT_SRC_PORT]
+# set_property display_name {C_DEFAULT_SRC_PORT} [ipx::get_user_parameters C_DEFAULT_SRC_PORT]
+# set_property value {0} [ipx::get_user_parameters C_DEFAULT_SRC_PORT]
+# set_property value_format {long} [ipx::get_user_parameters C_DEFAULT_SRC_PORT]
+# ipx::add_user_parameter {C_DEFAULT_DST_PORT} [ipx::current_core]
+# set_property value_resolve_type {user} [ipx::get_user_parameters C_DEFAULT_DST_PORT]
+# set_property display_name {C_DEFAULT_DST_PORT} [ipx::get_user_parameters C_DEFAULT_DST_PORT]
+# set_property value {0} [ipx::get_user_parameters C_DEFAULT_DST_PORT]
+# set_property value_format {long} [ipx::get_user_parameters C_DEFAULT_DST_PORT]
+# ipx::check_integrity [ipx::current_core]
+INFO: [IP_Flow 19-861] XGUI layout file basename "xgui/nf_axis_converter_v1_0.tcl" does not have the current IP <name>_v<version> format. If the IP name or version was changed recently, recreate this file to update the file format.
+INFO: [IP_Flow 19-3479] User Parameter 'C_M_AXIS_DATA_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_S_AXIS_DATA_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_M_AXIS_TUSER_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_S_AXIS_TUSER_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_LEN_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_SPT_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_DPT_WIDTH': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_DEFAULT_VALUE_ENABLE': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_DEFAULT_SRC_PORT': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_DEFAULT_DST_PORT': The long integer parameter is not bounded by any range or validation values.
+WARNING: [IP_Flow 19-3158] Bus Interface 'm_axis': FREQ_HZ bus parameter missing from AXI interface when interface is not associated to a clock.
+WARNING: [IP_Flow 19-3158] Bus Interface 's_axis': FREQ_HZ bus parameter missing from AXI interface when interface is not associated to a clock.
+WARNING: [IP_Flow 19-3153] Bus Interface 'axi_aclk': ASSOCIATED_BUSIF bus parameter is missing.
+INFO: [IP_Flow 19-2181] Payment Required is not set for this core.
+INFO: [IP_Flow 19-2187] The Product Guide file is missing.
+# ipx::save_core [ipx::current_core]
+# update_ip_catalog
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+# close_project
+# file delete -force ${proj_dir} 
+INFO: [Common 17-206] Exiting Vivado at Tue Jul 17 12:06:31 2018...

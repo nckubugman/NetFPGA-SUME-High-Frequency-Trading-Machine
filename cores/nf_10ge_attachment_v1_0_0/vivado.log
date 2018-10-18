@@ -1,0 +1,164 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Jul 17 12:07:27 2018
+# Process ID: 3799
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/nf_10ge_attachment_v1_0_0
+# Command line: vivado -mode batch -source nf_10ge_attachment_tcl.tcl
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/nf_10ge_attachment_v1_0_0/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/nf_10ge_attachment_v1_0_0/vivado.jou
+#-----------------------------------------------------------
+source nf_10ge_attachment_tcl.tcl
+# set device 		{xc7vx690tffg1761-3}
+# set ip_name 		{nf_10g_attachment}
+# set lib_name 		{NetFPGA}
+# set vendor_name 	{NetFPGA}
+# set ip_display_name 	{nf_10g_attachment}
+# set ip_description 	{10G Ethernet attachment for NetFPGA SUME}
+# set vendor_display_name {NetFPGA}
+# set vendor_company_url 	{http://www.netfpga.org}
+# set ip_version 		{1.0}
+# set proj_dir 		./ip_proj
+# set_param project.singleFileAddWarning.Threshold 500
+# set subcore_names {\
+# 		nf_axis_converter\
+# 		fallthrough_small_fifo\
+# }
+# set source_dir { \
+# 		hdl\
+# }
+# set VerilogFiles [list]
+# set VerilogFiles [concat \
+# 			[glob -nocomplain hdl]]
+# set rtl_dirs	[list]
+# set rtl_dirs	[concat \
+# 			hdl]
+# set top_module_name {nf_10g_attachment}
+# set top_module_file ./hdl/$top_module_name.v
+# puts "top_file: $top_module_file \n"
+top_file: ./hdl/nf_10g_attachment.v 
+
+# set bus_interfaces {\
+# 	xilinx.com:signal:clock:1.0\
+# 	xilinx.com:signal:reset:1.0\	
+# 	xilinx.com:interface:axis_rtl:1.0\
+# }
+# create_project -name ${ip_name} -force -dir "./${proj_dir}" -part ${device} 
+# set_property source_mgmt_mode All [current_project] 
+# set_property top $top_module_name [current_fileset]
+# set_property ip_repo_paths $::env(SUME_FOLDER)/lib/hw/  [current_fileset]
+# update_ip_catalog
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/root/NetFPGA-SUME-live/lib/hw'.
+WARNING: [IP_Flow 19-3656] If you move the project, the path for repository '/root/NetFPGA-SUME-live/lib/hw' may become invalid. A better location for the repository would be in a path adjacent to the project. (Current project location is '/root/NetFPGA-SUME-live/lib/hw/std/cores/nf_10ge_attachment_v1_0_0/ip_proj'.)
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/Vivado/2016.4/data/ip'.
+# foreach rtl_dir $rtl_dirs {
+#         set_property include_dirs $rtl_dirs [current_fileset]
+# }
+# foreach verilog_file $VerilogFiles {
+# 	add_files -norecurse ${verilog_file}
+# }
+# update_compile_order -fileset sources_1
+# update_compile_order -fileset sim_1
+# ipx::package_project
+WARNING: [IP_Flow 19-4656] Synthesis file group is packaged with a Dependency property value 'hdl' although it may not be recognized as a synthesis -include_dir property after IP delivery.
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_M_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 'm_axis_fifo_tdata'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_M_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 'm_axis_fifo_tkeep'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_S_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 's_axis_fifo_tdata'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_S_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 's_axis_fifo_tkeep'
+INFO: [IP_Flow 19-2228] Inferred bus interface 'm_axis_mac' of definition 'xilinx.com:interface:axis:1.0'.
+INFO: [IP_Flow 19-2228] Inferred bus interface 'm_axis_pipe' of definition 'xilinx.com:interface:axis:1.0'.
+INFO: [IP_Flow 19-2228] Inferred bus interface 's_axis_mac' of definition 'xilinx.com:interface:axis:1.0'.
+INFO: [IP_Flow 19-2228] Inferred bus interface 's_axis_pipe' of definition 'xilinx.com:interface:axis:1.0'.
+INFO: [IP_Flow 19-4753] Inferred signal 'reset' from port 'axis_aresetn' as interface 'axis_aresetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 'axis_aresetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4753] Inferred signal 'clock' from port 'axis_aclk' as interface 'axis_aclk'.
+INFO: [IP_Flow 19-4728] Bus Interface 'axis_aclk': Added interface parameter 'ASSOCIATED_RESET' with value 'axis_aresetn'.
+# set_property name 			${ip_name} [ipx::current_core]
+# set_property library 			${lib_name} [ipx::current_core]
+# set_property vendor_display_name 	${vendor_display_name} [ipx::current_core]
+# set_property company_url 		${vendor_company_url} [ipx::current_core]
+# set_property vendor 			${vendor_name} [ipx::current_core]
+# set_property supported_families 	{{virtex7} {Production}} [ipx::current_core]
+# set_property taxonomy 			{{/NetFPGA/Generic}} [ipx::current_core]
+# set_property version 			${ip_version} [ipx::current_core]
+# set_property display_name 		${ip_display_name} [ipx::current_core]
+# set_property description 		${ip_description} [ipx::current_core]
+# foreach subcore ${subcore_names} {
+# 	set subcore_regex NAME=~*$subcore*
+# 	set subcore_ipdef [get_ipdefs -filter ${subcore_regex}]
+# 
+# 	ipx::add_subcore ${subcore_ipdef} [ipx::get_file_groups xilinx_anylanguagesynthesis -of_objects [ipx::current_core]]
+# 	ipx::add_subcore ${subcore_ipdef}  [ipx::get_file_groups xilinx_anylanguagebehavioralsimulation -of_objects [ipx::current_core]]
+# 	puts "Adding the following subcore: $subcore_ipdef \n"
+# 
+# }
+Adding the following subcore: NetFPGA:NetFPGA:nf_axis_converter:1.00 
+
+Adding the following subcore: NetFPGA:NetFPGA:fallthrough_small_fifo:1.00 
+
+# ipx::remove_all_hdl_parameter [ipx::current_core]
+# ipx::add_model_parameters_from_hdl [ipx::current_core] -top_level_hdl_file $top_module_file -top_module_name $top_module_name
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_M_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 'm_axis_fifo_tdata'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_M_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 'm_axis_fifo_tkeep'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_S_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 's_axis_fifo_tdata'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_S_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 's_axis_fifo_tkeep'
+# ipx::infer_user_parameters [ipx::current_core]
+# set_property value_validation_type list [ipx::get_user_parameters C_M_AXIS_DATA_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_list {256 64} [ipx::get_user_parameters C_M_AXIS_DATA_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_type list [ipx::get_user_parameters C_S_AXIS_DATA_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_list {256 64} [ipx::get_user_parameters C_S_AXIS_DATA_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_type list [ipx::get_user_parameters C_DEFAULT_VALUE_ENABLE -of_objects [ipx::current_core]]
+# set_property value_validation_list {0 1} [ipx::get_user_parameters C_DEFAULT_VALUE_ENABLE -of_objects [ipx::current_core]]
+# set_property value_validation_type list [ipx::get_user_parameters C_M_AXIS_TUSER_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_list 128 [ipx::get_user_parameters C_M_AXIS_TUSER_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_type list [ipx::get_user_parameters C_S_AXIS_TUSER_WIDTH -of_objects [ipx::current_core]]
+# set_property value_validation_list 128 [ipx::get_user_parameters C_S_AXIS_TUSER_WIDTH -of_objects [ipx::current_core]]
+# ipx::remove_all_port [ipx::current_core]
+# ipx::add_ports_from_hdl [ipx::current_core] -top_level_hdl_file $top_module_file -top_module_name $top_module_name
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_M_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 'm_axis_fifo_tdata'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_M_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 'm_axis_fifo_tkeep'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_S_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 's_axis_fifo_tdata'
+INFO: [IP_Flow 19-1976] HDL Parser: Replacing 'C_S_AXIS_DATA_WIDTH_INTERNAL' by 64 for port or parameter 's_axis_fifo_tkeep'
+# foreach bus_standard ${bus_interfaces} {
+# 	ipx::infer_bus_interfaces ${bus_standard} [ipx::current_core]
+# }
+INFO: [IP_Flow 19-1793] Cannot infer any bus interface that matches bus definition xilinx.com:interface:aximm:1.0.
+INFO: [IP_Flow 19-1793] Cannot infer any bus interface that matches bus definition xilinx.com:interface:aximm:1.0.
+INFO: [IP_Flow 19-1793] Cannot infer any bus interface that matches bus definition xilinx.com:interface:aximm:1.0.
+# ipx::add_bus_interface clk156 [ipx::current_core]
+# set_property abstraction_type_vlnv xilinx.com:signal:clock_rtl:1.0 [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]
+# set_property bus_type_vlnv xilinx.com:signal:clock:1.0 [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]
+# set_property interface_mode slave [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]
+# ipx::add_port_map CLK [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]
+# set_property physical_name clk156 [ipx::get_port_maps CLK -of_objects [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]]
+# ipx::add_bus_parameter ASSOCIATED_BUSIF [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]
+# set_property value m_axis_mac:s_axis_mac [ipx::get_bus_parameters ASSOCIATED_BUSIF -of_objects [ipx::get_bus_interfaces clk156 -of_objects [ipx::current_core]]]
+# ipx::add_bus_interface areset_clk156 [ipx::current_core]
+# set_property abstraction_type_vlnv xilinx.com:signal:reset_rtl:1.0 [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]
+# set_property bus_type_vlnv xilinx.com:signal:reset:1.0 [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]
+# set_property interface_mode slave [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]
+# ipx::add_port_map RST [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]
+# set_property physical_name areset_clk156 [ipx::get_port_maps RST -of_objects [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]]
+# ipx::add_bus_parameter POLARITY [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]
+# set_property value ACTIVE_HIGH [ipx::get_bus_parameters POLARITY -of_objects [ipx::get_bus_interfaces areset_clk156 -of_objects [ipx::current_core]]]
+# ipx::add_bus_parameter ASSOCIATED_BUSIF [ipx::get_bus_interfaces axis_aclk -of_objects [ipx::current_core]]
+# set_property value m_axis_pipe:s_axis_pipe [ipx::get_bus_parameters ASSOCIATED_BUSIF -of_objects [ipx::get_bus_interfaces axis_aclk -of_objects [ipx::current_core]]]
+# ipx::add_bus_parameter TDATA_NUM_BYTES [ipx::get_bus_interfaces m_axis_pipe -of_objects [ipx::current_core]]
+# set_property description {TDATA Width (bytes)} [ipx::get_bus_parameters TDATA_NUM_BYTES -of_objects [ipx::get_bus_interfaces m_axis_pipe -of_objects [ipx::current_core]]]
+# set_property value 32 [ipx::get_bus_parameters TDATA_NUM_BYTES -of_objects [ipx::get_bus_interfaces m_axis_pipe -of_objects [ipx::current_core]]]
+# ipx::check_integrity [ipx::current_core]
+INFO: [IP_Flow 19-3479] User Parameter 'C_DEFAULT_SRC_PORT (C Default Src Port)': The long integer parameter is not bounded by any range or validation values.
+INFO: [IP_Flow 19-3479] User Parameter 'C_DEFAULT_DST_PORT (C Default Dst Port)': The long integer parameter is not bounded by any range or validation values.
+CRITICAL WARNING: [IP_Flow 19-3834] Port 'm_axis_pipe_tdata': Port mapped to the logical port 'TDATA' of 'xilinx.com:interface:axis:1.0' interface must have a width of multiples of 8 bits.  The current port width is '1'.
+INFO: [IP_Flow 19-2181] Payment Required is not set for this core.
+INFO: [IP_Flow 19-2187] The Product Guide file is missing.
+# write_peripheral [ipx::current_core]
+# ipx::create_xgui_files [ipx::current_core]
+# ipx::update_checksums [ipx::current_core]
+# ipx::save_core [ipx::current_core]
+# close_project
+# exit
+INFO: [Common 17-206] Exiting Vivado at Tue Jul 17 12:07:34 2018...

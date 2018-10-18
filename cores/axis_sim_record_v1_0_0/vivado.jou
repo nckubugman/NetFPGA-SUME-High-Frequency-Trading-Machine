@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Jul 17 12:06:48 2018
+# Process ID: 3604
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/axis_sim_record_v1_0_0
+# Command line: vivado -mode batch -source axis_sim_record.tcl
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/axis_sim_record_v1_0_0/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/axis_sim_record_v1_0_0/vivado.jou
+#-----------------------------------------------------------
+source axis_sim_record.tcl

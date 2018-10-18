@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Jul 17 12:05:32 2018
+# Process ID: 3218
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/fallthrough_small_fifo_v1_0_0
+# Command line: vivado -mode batch -source fallthrough_small_fifo.tcl
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/fallthrough_small_fifo_v1_0_0/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/fallthrough_small_fifo_v1_0_0/vivado.jou
+#-----------------------------------------------------------
+source fallthrough_small_fifo.tcl

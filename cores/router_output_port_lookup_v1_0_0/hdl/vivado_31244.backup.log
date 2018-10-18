@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Thu Jul  5 20:42:00 2018
+# Process ID: 31244
+# Current directory: /root/NetFPGA-SUME-live/lib/hw/std/cores/router_output_port_lookup_v1_0_0/hdl
+# Command line: vivado
+# Log file: /root/NetFPGA-SUME-live/lib/hw/std/cores/router_output_port_lookup_v1_0_0/hdl/vivado.log
+# Journal file: /root/NetFPGA-SUME-live/lib/hw/std/cores/router_output_port_lookup_v1_0_0/hdl/vivado.jou
+#-----------------------------------------------------------
+start_gui
+exit
+INFO: [Common 17-206] Exiting Vivado at Thu Jul  5 21:57:55 2018...

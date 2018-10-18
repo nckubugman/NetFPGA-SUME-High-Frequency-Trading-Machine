@@ -1,0 +1,18 @@
+All but this file in this directory is a copy of
+RIFFA (Reusable Integration Framework for FPGA Accelerators) version 2.2.0
+downloaded rom http://riffa.ucsd.edu/download .  The checksums of
+the ZIP file after download were:
+
+SHA512 (riffa_2.2.0_0.zip) = 03701bb6eaca62506e8dd5f2d768f9bd0090d662a45578ff2fae675faedb88de29ab18197155b3a8b8d0aca3137e586dcc112f6ffbbc7406a5de516e559877e0
+SHA256 (riffa_2.2.0_0.zip) = f1594681facdf6ba1a6d715c9afee0cbd7472a1bd987950a89f5a9537ed48202
+MD5 (riffa_2.2.0_0.zip) = 5e1b41d0a8f65ec575583681a1c4c8e0
+
+After copying riffa_2.2.0_0.zip into this directory the following
+sequence of commands were used to extract it and put the files in place:
+
+unzip riffa_2.2.0_0.zip
+mv -i riffa_2.2.0/source/fpga/riffa_hdl/* .
+rm -rf riffa_2.2.0/ riffa_2.2.0_0.zip
+rm altera.vh chnl_tester.v translation_altera.v translation_xilinx.v xilinx.vh
+
+# end
