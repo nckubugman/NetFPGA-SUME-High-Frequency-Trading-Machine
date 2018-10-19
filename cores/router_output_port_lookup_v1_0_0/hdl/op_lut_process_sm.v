@@ -679,6 +679,7 @@ module op_lut_process_sm
               in_fifo_rd_en     = 1;
 
               if(in_fifo_tlast) begin
+                 send_ack_sig = 1'b1;
                  state_next =  ACK_GEN_1;
                  //rd_preprocess_done = 1;
                  //rd_preprocess_info          = 1;
