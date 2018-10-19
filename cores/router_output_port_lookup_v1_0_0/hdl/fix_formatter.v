@@ -213,7 +213,7 @@ module fix_formatter
 */
 //	      end
                 if(order_index_out[0] == 1'b1) begin
-			case([send_one,rd_preprocess_done})
+			case({send_one,rd_preprocess_done})
 			   	2'b10:begin
 					state_next = WAIT_PREPROCESS_RDY;
 					is_send_pkt = 0;
