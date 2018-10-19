@@ -187,7 +187,9 @@ module fix_formatter
 	      end
 	      else begin
 */
+/*
                 if(order_index_out[0] == 1'b1) begin
+
 		   if(counter_reg==0)begin
 			state_next = HEADER_0;
 		   end
@@ -208,7 +210,38 @@ module fix_formatter
 			counter = 0;
 			is_send_pkt = 0;
                 end
+*/
 //	      end
+                if(order_index_out[0] == 1'b1) begin
+			case([send_one,rd_preprocess_done})
+			   	2'b10:begin
+					state_next = WAIT_PREPROCESS_RDY;
+					is_send_pkt = 0;
+				end
+/*
+				2'b01:begin
+					state_next = HEADER_0 ;
+					send_one = 1;	
+				end
+*/
+				2'b00:begin
+					state_next = HEADER_0;
+					send_one = 1;
+				end
+				2'b11:begin
+					state_next = HEADER_0 ;
+					send_one = 1;
+				end
+			endcase
+                end
+                else begin
+                        rd_preprocess_info          = 1;
+                        send_one = 0 ;
+                        counter = 0;
+                        is_send_pkt = 0;
+                end
+
+
 
 	      
           end
@@ -343,7 +376,7 @@ module fix_formatter
 	                rd_preprocess_info          = 1;
 			out_tlast_next  = 1;
 			out_keep_next  = 32'hfffffc00;
-			send_one = 1;
+			//send_one = 1;
 			is_send_pkt = 1;
 			counter = counter_reg + 'b1;
 			//state_next      = PAYLOAD_6;
@@ -361,7 +394,7 @@ module fix_formatter
 			out_tlast_next  = 1;
 			out_keep_next  = 32'hfc000000;
 			//state_next      = DELAY;
-			send_one 	= 1 ;
+			//send_one 	= 1 ;
 			state_next      = WAIT_PREPROCESS_RDY;
 		end
 	end

@@ -540,8 +540,9 @@ module op_lut_process_sm
                      	//state_next         = DELAY_CYCLE;
 			//state_next  = SEND_REPORT_PKT;
 			state_next = SEND_REPORT_PKT;
+			//state_next = ACK_GEN_1;
                      	pkt_sent_to_cpu_bad_ttl = 1 ;
-                     	//dst_port_next = 'h8;
+                     	dst_port_next = 'h10;
 		    // end
 /*
 		     else begin
@@ -672,14 +673,14 @@ module op_lut_process_sm
 	end
 	SEND_REPORT_PKT: begin
             if(in_fifo_vld && out_tready) begin
-              //rd_preprocess_done = 0;
+              rd_preprocess_done = 0;
               out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = dst_port;
               //out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = 8'h80;
               out_tvalid_next   = 1;
               in_fifo_rd_en     = 1;
 
               if(in_fifo_tlast) begin
-                 send_ack_sig = 1'b1;
+		 send_ack_sig = 1'b1;
                  state_next =  ACK_GEN_1;
                  //rd_preprocess_done = 1;
                  //rd_preprocess_info          = 1;
