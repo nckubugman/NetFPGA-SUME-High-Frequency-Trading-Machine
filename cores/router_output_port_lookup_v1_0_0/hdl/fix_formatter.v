@@ -189,9 +189,15 @@ module fix_formatter
 	      end
 	      else begin
 */
+<<<<<<< HEAD
 
                 if(order_index_out[0] == 1'b1) begin
 /*
+=======
+/*
+                if(order_index_out[0] == 1'b1) begin
+
+>>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 		   if(counter_reg==0)begin
 			state_next = HEADER_0;
 			send_one = 1;
@@ -215,15 +221,21 @@ module fix_formatter
 			counter = 0;
 			is_send_pkt = 0;
                 end
+<<<<<<< HEAD
 
 //	      end
 /*
+=======
+*/
+//	      end
+>>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
                 if(order_index_out[0] == 1'b1) begin
 			case({send_one,rd_preprocess_done})
 			   	2'b10:begin
 					state_next = WAIT_PREPROCESS_RDY;
 					is_send_pkt = 0;
 				end
+<<<<<<< HEAD
 
 				2'b01:begin
 					//state_next = HEADER_0 ;
@@ -238,6 +250,21 @@ module fix_formatter
 				2'b11:begin
 					state_next = HEADER_0 ;
 					//send_one = 1;
+=======
+/*
+				2'b01:begin
+					state_next = HEADER_0 ;
+					send_one = 1;	
+				end
+*/
+				2'b00:begin
+					state_next = HEADER_0;
+					send_one = 1;
+				end
+				2'b11:begin
+					state_next = HEADER_0 ;
+					send_one = 1;
+>>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 				end
 			endcase
                 end
@@ -248,7 +275,11 @@ module fix_formatter
                         is_send_pkt = 0;
                 end
 
+<<<<<<< HEAD
 */
+=======
+
+>>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 
 	      
           end
@@ -393,8 +424,13 @@ module fix_formatter
 	                rd_preprocess_info          = 1;
 			out_tlast_next  = 1;
 			out_keep_next  = 32'hfffffc00;
+<<<<<<< HEAD
 			send_one  = 1 ;
 			//is_send_pkt = 1;
+=======
+			//send_one = 1;
+			is_send_pkt = 1;
+>>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 			counter = counter_reg + 'b1;
 			//state_next      = PAYLOAD_6;
 			//state_next      = WAIT_PREPROCESS_RDY;
