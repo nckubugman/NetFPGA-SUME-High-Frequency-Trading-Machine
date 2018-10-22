@@ -30,6 +30,10 @@
      output			   is_testReq,
      output			   is_logout,   
      output			   is_fix_order,
+ 
+     output			   is_session_reject,
+     output			   is_order_cancel_reject,
+ 
 
  
 //     output reg [31:0]             recv_fix_server_seq, // parse recieve fix server sequence number
@@ -79,12 +83,12 @@
      reg			   resend_end_check_two;
      reg			   resend_non_dup;
 
-fallthrough_small_fifo #(.WIDTH(8), .MAX_DEPTH_BITS(9))
+fallthrough_small_fifo #(.WIDTH(10), .MAX_DEPTH_BITS(9))
    check_tcp_fifo
-   (.din               ({is_fix_pkt, logon_pkt, report_pkt , resend_pkt , heartbeat_pkt , testrequest_pkt , logout_pkt , fix_order_in}),
+   (.din               ({is_fix_pkt, logon_pkt, report_pkt , resend_pkt , heartbeat_pkt , testrequest_pkt , logout_pkt , fix_order_in , session_reject_pkt, order_cancel_reject_pkt}),
     .wr_en             (check_done),
     .rd_en             (rd_check),
-    .dout              ({is_fix, is_logon, is_report, is_resend , is_heartbeat , is_testReq , is_logout,is_fix_order}),
+    .dout              ({is_fix, is_logon, is_report, is_resend , is_heartbeat , is_testReq , is_logout,is_fix_order,is_session_reject,is_order_cancel_reject}),
     .full              (),
     .nearly_full       (),
     .prog_full         (),

@@ -151,6 +151,8 @@ module op_lut_process_sm
    input			      is_heartbeat,
    input			      is_testReq,
    input			      is_logout,
+   input			      is_session_reject,
+   input			      is_order_cancel_reject,
 
    // --- connect_signal
    input  [31:0]		      cpu2ip_connect_signal_reg, 
@@ -531,7 +533,7 @@ module op_lut_process_sm
 
 
 
-              else if(is_ip_pkt && is_fix && is_report ) begin
+              else if(is_ip_pkt && is_fix && (is_report||is_order_cancel_reject) ) begin
 	   	    // if(order_index_out[0]=='b0)begin
                      	//pkt_sent_to_cpu_options_ver   = 1;
                      	to_from_cpu_next   = 0;
@@ -554,6 +556,12 @@ module op_lut_process_sm
                         dst_port_next = 'h8;
 		     end
 */
+              end
+
+              else if(is_ip_pkt &&  is_fix && is_session_reject) begin
+                     to_from_cpu_next   = 0;
+                     dst_port_next      = 'h10;
+                      state_next         =  SEND_PKT;
               end
 
 
