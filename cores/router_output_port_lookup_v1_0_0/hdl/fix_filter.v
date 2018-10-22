@@ -176,7 +176,7 @@ always @(posedge clk) begin
 		
 
         end
-/*
+
 	if(counter == 8'd4 && valid && fix_pkt && resend_pkt)begin
 		//resend_non_dup <= 1'b1;
 
@@ -887,7 +887,7 @@ always @(posedge clk) begin
 		end
 	end
 
-*/
+
        if(tlast && valid) begin
 		check_done <= 1'b1;
 		end_state  <= 1'b1;
@@ -920,7 +920,7 @@ always @(posedge clk) begin
 end
 
 
-/*
+
 
 always @(posedge clk) begin
         if(reset) begin
@@ -1011,6 +1011,6 @@ always @(posedge clk) begin
        end
 end
 
-*/
+
 
 endmodule

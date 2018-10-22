@@ -425,7 +425,7 @@ module op_lut_process_sm
       is_send_logout_next 	  = is_send_logout;
       is_order_pkt		 =0;
       is_connect_pkt		 = 0;
-      rd_preprocess_done	 = 0;
+      //rd_preprocess_done	 = 0;
 
       case(state)
         WAIT_PREPROCESS_RDY: begin
@@ -444,14 +444,14 @@ module op_lut_process_sm
 		pkt_dropped_checksum = 1;
 	   end
 */
-/*
+
 
            if(is_send_pkt)begin
                 rd_preprocess_done = 0;
-		state_next = WAIT_PREPROCESS_RDY;
+		//state_next = WAIT_PREPROCESS_RDY;
 		pkt_sent_from_cpu = 1;
            end
-*/	     
+	     
 
            if(preprocess_vld) begin
               /* if the packet is from the CPU then all the info on it is correct.
@@ -540,8 +540,9 @@ module op_lut_process_sm
                      	//state_next         = DELAY_CYCLE;
 			//state_next  = SEND_REPORT_PKT;
 			state_next = SEND_REPORT_PKT;
+			//state_next = ACK_GEN_1;
                      	pkt_sent_to_cpu_bad_ttl = 1 ;
-                     	//dst_port_next = 'h8;
+                     	dst_port_next = 'h10;
 		    // end
 /*
 		     else begin
@@ -679,7 +680,7 @@ module op_lut_process_sm
               in_fifo_rd_en     = 1;
 
               if(in_fifo_tlast) begin
-                 send_ack_sig = 1'b1;
+		 send_ack_sig = 1'b1;
                  state_next =  ACK_GEN_1;
                  //rd_preprocess_done = 1;
                  //rd_preprocess_info          = 1;

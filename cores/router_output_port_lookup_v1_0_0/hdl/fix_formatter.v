@@ -111,7 +111,7 @@ module fix_formatter
    localparam PAYLOAD_5		  = 4096;
    localparam PAYLOAD_6		  = 8192;
    localparam DELAY		  = 16384;
-   
+   localparam WAIT_RD_PREPROCESS_DONE = 16385;
    localparam C_AXIS_SRC_PORT_POS = 16;
    localparam C_AXIS_DST_PORT_POS = 24;
    //---------------------- Wires and regs -------------------------
@@ -135,10 +135,11 @@ module fix_formatter
 
    reg [3:0] 			counter;
    reg [3:0] 			counter_reg;
-
+   reg 				send_one_next;
    wire	[NUM_QUEUES-1:0] output_port;		
    
-
+   reg				generate_lock;
+   reg				generate_lock_next;
 //   reg			send_one ;
 
 
@@ -156,6 +157,7 @@ module fix_formatter
       rd_preprocess_info            = 0;
       state_next                    = state;
       counter			    = counter_reg;
+	send_one_next 		    = 0;
 //      is_send_pkt 		    = 0;
 //      in_fifo_rd_en                 = 0;
       case(state)
@@ -187,20 +189,25 @@ module fix_formatter
 	      end
 	      else begin
 */
+
                 if(order_index_out[0] == 1'b1) begin
+/*
 		   if(counter_reg==0)begin
 			state_next = HEADER_0;
+			send_one = 1;
 		   end
 		   else begin
-		    	if(rd_preprocess_done)begin
+*/
+		    	if(generate_lock||rd_preprocess_done)begin
                         	state_next = HEADER_0;
-                        	//is_send_pkt = 1;
+                        	is_send_pkt = 1;
 		    	end
 		    	else begin
 				state_next = WAIT_PREPROCESS_RDY;
 				is_send_pkt = 0;
 			end
-		   end
+
+//		   end
                 end
                 else begin
                         rd_preprocess_info          = 1;
@@ -208,7 +215,40 @@ module fix_formatter
 			counter = 0;
 			is_send_pkt = 0;
                 end
+
 //	      end
+/*
+                if(order_index_out[0] == 1'b1) begin
+			case({send_one,rd_preprocess_done})
+			   	2'b10:begin
+					state_next = WAIT_PREPROCESS_RDY;
+					is_send_pkt = 0;
+				end
+
+				2'b01:begin
+					//state_next = HEADER_0 ;
+					state_next = WAIT_PREPROCESS_RDY;
+					//send_one = 1;	
+				end
+
+				2'b00:begin
+					state_next = HEADER_0;
+					//send_one = 1;
+				end
+				2'b11:begin
+					state_next = HEADER_0 ;
+					//send_one = 1;
+				end
+			endcase
+                end
+                else begin
+                        rd_preprocess_info          = 1;
+                        send_one = 0 ;
+                        counter = 0;
+                        is_send_pkt = 0;
+                end
+
+*/
 
 	      
           end
@@ -235,7 +275,17 @@ module fix_formatter
 	      end
            end
         end
-*/	HEADER_0: begin
+*/
+	WAIT_RD_PREPROCESS_DONE: begin
+		if(rd_preprocess_done)begin
+			state_next = HEADER_0;
+		end
+		else begin
+			is_send_pkt = 0;
+		end
+	end
+
+	HEADER_0: begin
 		if(out_tready) begin
 	                //out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00f87a2840004006}, {64'h023c8c7452bd8c74}};
 	                out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00E87a2840004006}, {64'h023c8c7452bd8c74}}; //length 224 Before length248
@@ -343,8 +393,8 @@ module fix_formatter
 	                rd_preprocess_info          = 1;
 			out_tlast_next  = 1;
 			out_keep_next  = 32'hfffffc00;
-			send_one = 1;
-			is_send_pkt = 1;
+			send_one  = 1 ;
+			//is_send_pkt = 1;
 			counter = counter_reg + 'b1;
 			//state_next      = PAYLOAD_6;
 			//state_next      = WAIT_PREPROCESS_RDY;
@@ -361,7 +411,7 @@ module fix_formatter
 			out_tlast_next  = 1;
 			out_keep_next  = 32'hfc000000;
 			//state_next      = DELAY;
-			send_one 	= 1 ;
+			//send_one 	= 1 ;
 			state_next      = WAIT_PREPROCESS_RDY;
 		end
 	end
@@ -386,6 +436,7 @@ module fix_formatter
          to_from_cpu       <= 0;
          dst_port          <= 'h0;
 	 counter_reg	   <= 'h0;
+//	 send_one	   <= 0;
       end
       else begin
          state             <= state_next;
@@ -397,24 +448,32 @@ module fix_formatter
          to_from_cpu       <= to_from_cpu_next;
          dst_port          <= dst_port_next;
 	 counter_reg	   <= counter;
+	 //send_one          <= send_one_next;
+	 if(order_index_out[0]==1'b0)begin
+		counter_reg <= 0 ;
+	 end 
       end // else: !if(reset)
+      
    end // always @ (posedge clk)
 
-/*
+
    always @(posedge clk)begin
 	if(reset)begin
-		is_send_pkt <= 0;
+		generate_lock <= 1;
 	end
 	else begin
-	         if(out_tlast&&out_tvalid)begin
-        	        is_send_pkt <= 1 ;
-	         end
-	         else begin
-	                is_send_pkt <= 0 ;
-	         end
+/*
+           if(order_index_out[0]==1'b0)begin
+                generate_lock <= 1 ;
+           end
+	   else begin 
+		generate_lock <= 0;
+	   end
+*/
+	   generate_lock <= 1;
 	end
    end
-*/
+
 
 endmodule // op_lut_process_sm
 
