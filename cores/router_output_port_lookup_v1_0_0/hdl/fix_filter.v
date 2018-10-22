@@ -176,6 +176,7 @@ always @(posedge clk) begin
 		
 
         end
+
 	if(counter == 8'd4 && valid && fix_pkt && resend_pkt)begin
 		//resend_non_dup <= 1'b1;
 
