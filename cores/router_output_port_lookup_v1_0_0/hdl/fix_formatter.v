@@ -143,6 +143,8 @@ module fix_formatter
 //   reg			send_one ;
    reg				send_cross ;
    reg				send_first;
+
+   reg				is_send_pkt_next;
    always @(*) begin
 /*      out_tlast_next                = in_fifo_tlast;
       out_tdata_next		    = in_fifo_tdata;
@@ -158,10 +160,10 @@ module fix_formatter
       state_next                    = state;
       counter			    = counter_reg;
 	send_one_next 		    = 0;
-//      is_send_pkt 		    = 0;
+       is_send_pkt_next 	    = 0;
 //      in_fifo_rd_en                 = 0;
       send_first		    = 0;
-      send_cross		    = 1;
+//      send_cross		    = 1;
       case(state)
         WAIT_PREPROCESS_RDY: begin
 /*
@@ -202,7 +204,7 @@ module fix_formatter
 */
 		    	if((generate_lock^rd_preprocess_done)==1'b1)begin
                         	state_next = HEADER_0;
-                        	is_send_pkt = 1;
+                        	is_send_pkt_next = 1;
 				send_first = 1;
 				send_cross = 0;
 		    	end
@@ -480,8 +482,10 @@ module fix_formatter
    always @(posedge clk)begin
 	if(reset)begin
 		generate_lock <= 1;
+		is_send_pkt   <= 0;
 	end
 	else begin
+	   is_send_pkt <= is_send_pkt_next;
 	   if(send_cross)begin
 		generate_lock <= 1;
 	   end

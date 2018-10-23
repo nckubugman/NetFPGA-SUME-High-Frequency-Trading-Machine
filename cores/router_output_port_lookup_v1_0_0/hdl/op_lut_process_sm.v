@@ -450,8 +450,9 @@ module op_lut_process_sm
 
            if(is_send_pkt)begin
                 rd_preprocess_done = 0;
-		//state_next = WAIT_PREPROCESS_RDY;
-		pkt_sent_from_cpu = 1;
+		state_next = WAIT_PREPROCESS_RDY;
+		//pkt_sent_from_cpu = 1;
+		pkt_forwarded = 1;
            end
 	     
 
@@ -622,12 +623,12 @@ module op_lut_process_sm
            
 	else if(counter == 'b0 && cpu2ip_connect_signal_reg == 1) begin
 		dst_port_next		    = output_port;
-		pkt_forwarded		    = 1;	
+		//pkt_forwarded		    = 1;	
 		state_next = SYN_GEN_1;
 	end
         else if(counter_for_shutdown == 'b0 && cpu2ip_shutdown_signal_reg == 1) begin
 		dst_port_next		    = output_port;
-                pkt_forwarded               = 1;
+                //pkt_forwarded               = 1;
                 state_next = LOGOUT_GEN_1;
         end
 /*
