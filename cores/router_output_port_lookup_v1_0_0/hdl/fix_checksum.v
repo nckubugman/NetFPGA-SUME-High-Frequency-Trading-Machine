@@ -53,7 +53,7 @@ module fix_checksum
    wire [7:0]  cksm_temp0,cksm_temp1,cksm_temp2,cksm_temp3,cksm_temp4,cksm_temp5,cksm_temp6,cksm_temp7;
    reg  [7:0]  cksm_sum_final_1 ,cksm_sum_final_2 ,cksm_sum_final_3;
    wire [7:0]  cksm_final;
-   reg  [7:0]  checksum_final;
+   reg  [11:0]  checksum_final;
    //---------------------- Wires and regs---------------------------
    reg    checksum_done;
    wire   empty;
@@ -513,7 +513,7 @@ end
 	end
 	else begin
 		if(valid || add_carry_1 ) begin
-	        	checksum_final  <= cksm_final; 
+	        	checksum_final  <= {4'b0,cksm_final}; 
 	        	checksum_word_0 <= cksm_temp0;
 	        	checksum_word_1 <= cksm_temp1;
 	        	checksum_word_2 <= cksm_temp2;
