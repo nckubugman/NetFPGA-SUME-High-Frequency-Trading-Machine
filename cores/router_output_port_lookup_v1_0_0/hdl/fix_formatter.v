@@ -141,8 +141,8 @@ module fix_formatter
    reg				generate_lock;
    reg				generate_lock_next;
 //   reg			send_one ;
-
-
+   reg				send_cross ;
+   reg				send_first;
    always @(*) begin
 /*      out_tlast_next                = in_fifo_tlast;
       out_tdata_next		    = in_fifo_tdata;
@@ -160,6 +160,8 @@ module fix_formatter
 	send_one_next 		    = 0;
 //      is_send_pkt 		    = 0;
 //      in_fifo_rd_en                 = 0;
+      send_first		    = 0;
+      send_cross		    = 1;
       case(state)
         WAIT_PREPROCESS_RDY: begin
 /*
@@ -189,53 +191,59 @@ module fix_formatter
 	      end
 	      else begin
 */
-<<<<<<< HEAD
 
                 if(order_index_out[0] == 1'b1) begin
 /*
-=======
-/*
-                if(order_index_out[0] == 1'b1) begin
-
->>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 		   if(counter_reg==0)begin
 			state_next = HEADER_0;
 			send_one = 1;
 		   end
 		   else begin
 */
-		    	if(generate_lock||rd_preprocess_done)begin
+		    	if((generate_lock^rd_preprocess_done)==1'b1)begin
                         	state_next = HEADER_0;
                         	is_send_pkt = 1;
+				send_first = 1;
+				send_cross = 0;
 		    	end
 		    	else begin
 				state_next = WAIT_PREPROCESS_RDY;
-				is_send_pkt = 0;
 			end
 
 //		   end
                 end
                 else begin
                         rd_preprocess_info          = 1;
+/*
+			if(send_one)begin
+				send_cross =1;
+			end
+			else begin
+				send_cross = 0;
+			end
+*/
+			if(rd_preprocess_done)begin
+				send_cross = 0;
+			end
+			else begin
+				send_cross = 1;
+			end
+
+/*
 			send_one = 0 ;
 			counter = 0;
 			is_send_pkt = 0;
+*/
                 end
-<<<<<<< HEAD
 
 //	      end
 /*
-=======
-*/
-//	      end
->>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
                 if(order_index_out[0] == 1'b1) begin
 			case({send_one,rd_preprocess_done})
 			   	2'b10:begin
 					state_next = WAIT_PREPROCESS_RDY;
 					is_send_pkt = 0;
 				end
-<<<<<<< HEAD
 
 				2'b01:begin
 					//state_next = HEADER_0 ;
@@ -250,21 +258,6 @@ module fix_formatter
 				2'b11:begin
 					state_next = HEADER_0 ;
 					//send_one = 1;
-=======
-/*
-				2'b01:begin
-					state_next = HEADER_0 ;
-					send_one = 1;	
-				end
-*/
-				2'b00:begin
-					state_next = HEADER_0;
-					send_one = 1;
-				end
-				2'b11:begin
-					state_next = HEADER_0 ;
-					send_one = 1;
->>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 				end
 			endcase
                 end
@@ -275,11 +268,7 @@ module fix_formatter
                         is_send_pkt = 0;
                 end
 
-<<<<<<< HEAD
 */
-=======
-
->>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 
 	      
           end
@@ -424,13 +413,8 @@ module fix_formatter
 	                rd_preprocess_info          = 1;
 			out_tlast_next  = 1;
 			out_keep_next  = 32'hfffffc00;
-<<<<<<< HEAD
 			send_one  = 1 ;
 			//is_send_pkt = 1;
-=======
-			//send_one = 1;
-			is_send_pkt = 1;
->>>>>>> a90cd82cc572b0655b632f45a2c909aa2d5c48ca
 			counter = counter_reg + 'b1;
 			//state_next      = PAYLOAD_6;
 			//state_next      = WAIT_PREPROCESS_RDY;
@@ -498,6 +482,12 @@ module fix_formatter
 		generate_lock <= 1;
 	end
 	else begin
+	   if(send_cross)begin
+		generate_lock <= 1;
+	   end
+	   else begin
+		generate_lock <= 0;
+	   end
 /*
            if(order_index_out[0]==1'b0)begin
                 generate_lock <= 1 ;
@@ -506,7 +496,7 @@ module fix_formatter
 		generate_lock <= 0;
 	   end
 */
-	   generate_lock <= 1;
+//	   generate_lock <= 1;
 	end
    end
 

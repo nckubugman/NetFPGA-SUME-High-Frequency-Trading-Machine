@@ -186,6 +186,17 @@ assign fix_seq_num_vld = !empty;
 always@(tlast,tuser[35:32])begin
 	case({tlast,tuser[35:32]})
 		5'b10010:begin
+		   if(resend_mode_one||resend_mode_two||resend_mode_three)begin
+                        msg_seq_num_0 = msg_seq_num_reg_0;
+                        msg_seq_num_1 = msg_seq_num_reg_1;
+                        msg_seq_num_2 = msg_seq_num_reg_2;
+                        msg_seq_num_3 = msg_seq_num_reg_3;
+                        msg_seq_num_4 = msg_seq_num_reg_4;
+                        msg_seq_num_5 = msg_seq_num_reg_5;
+                        msg_seq_num_6 = msg_seq_num_reg_6;
+                        msg_seq_num_7 = msg_seq_num_reg_7;
+		   end
+		   else begin
 		      msg_seq_num_0 = msg_seq_num_reg_0 + 4'd1;
    		      msg_seq_num_1 = msg_seq_num_reg_1;
 		      msg_seq_num_2 = msg_seq_num_reg_2;
@@ -194,6 +205,7 @@ always@(tlast,tuser[35:32])begin
 		      msg_seq_num_5 = msg_seq_num_reg_5;
 		      msg_seq_num_6 = msg_seq_num_reg_6;
 		      msg_seq_num_7 = msg_seq_num_reg_7; 
+		  end
 		end
 		5'b00010:begin
 			msg_seq_num_0 = msg_seq_num_reg_0;
@@ -238,8 +250,95 @@ always@(tlast,tuser[35:32])begin
 	endcase
 end
 
+/*
+always@(tlast,tuser[35:32],resend_mode_one,resend_mode_two,resend_mode_three)begin
+        case({tlast,tuser[35:32],resend_mode_one,resend_mode_two,resend_mode_three})
+                5'b10010001 :begin
+                      msg_seq_num_0 = msg_seq_num_reg_0;
+                      msg_seq_num_1 = msg_seq_num_reg_1;
+                      msg_seq_num_2 = msg_seq_num_reg_2;
+                      msg_seq_num_3 = msg_seq_num_reg_3;
+                      msg_seq_num_4 = msg_seq_num_reg_4;
+                      msg_seq_num_5 = msg_seq_num_reg_5;
+                      msg_seq_num_6 = msg_seq_num_reg_6;
+                      msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+                5'b10010010 :begin
+                      msg_seq_num_0 = msg_seq_num_reg_0;
+                      msg_seq_num_1 = msg_seq_num_reg_1;
+                      msg_seq_num_2 = msg_seq_num_reg_2;
+                      msg_seq_num_3 = msg_seq_num_reg_3;
+                      msg_seq_num_4 = msg_seq_num_reg_4;
+                      msg_seq_num_5 = msg_seq_num_reg_5;
+                      msg_seq_num_6 = msg_seq_num_reg_6;
+                      msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+                5'b10010100 :begin
+                      msg_seq_num_0 = msg_seq_num_reg_0;
+                      msg_seq_num_1 = msg_seq_num_reg_1;
+                      msg_seq_num_2 = msg_seq_num_reg_2;
+                      msg_seq_num_3 = msg_seq_num_reg_3;
+                      msg_seq_num_4 = msg_seq_num_reg_4;
+                      msg_seq_num_5 = msg_seq_num_reg_5;
+                      msg_seq_num_6 = msg_seq_num_reg_6;
+                      msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+                5'b10010000 :begin
+                      msg_seq_num_0 = msg_seq_num_reg_0 + 4'd1;
+                      msg_seq_num_1 = msg_seq_num_reg_1;
+                      msg_seq_num_2 = msg_seq_num_reg_2;
+                      msg_seq_num_3 = msg_seq_num_reg_3;
+                      msg_seq_num_4 = msg_seq_num_reg_4;
+                      msg_seq_num_5 = msg_seq_num_reg_5;
+                      msg_seq_num_6 = msg_seq_num_reg_6;
+                      msg_seq_num_7 = msg_seq_num_reg_7;
+                end
 
 
+                5'b00010000:begin
+                        msg_seq_num_0 = msg_seq_num_reg_0;
+                        msg_seq_num_1 = msg_seq_num_reg_1;
+                        msg_seq_num_2 = msg_seq_num_reg_2;
+                        msg_seq_num_3 = msg_seq_num_reg_3;
+                        msg_seq_num_4 = msg_seq_num_reg_4;
+                        msg_seq_num_5 = msg_seq_num_reg_5;
+                        msg_seq_num_6 = msg_seq_num_reg_6;
+                        msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+
+                5'b10001000:begin
+                        msg_seq_num_0 = msg_seq_num_reg_0;
+                        msg_seq_num_1 = msg_seq_num_reg_1;
+                        msg_seq_num_2 = msg_seq_num_reg_2;
+                        msg_seq_num_3 = msg_seq_num_reg_3;
+                        msg_seq_num_4 = msg_seq_num_reg_4;
+                        msg_seq_num_5 = msg_seq_num_reg_5;
+                        msg_seq_num_6 = msg_seq_num_reg_6;
+                        msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+                5'b00001000:begin
+                        msg_seq_num_0 = msg_seq_num_reg_0;
+                        msg_seq_num_1 = msg_seq_num_reg_1;
+                        msg_seq_num_2 = msg_seq_num_reg_2;
+                        msg_seq_num_3 = msg_seq_num_reg_3;
+                        msg_seq_num_4 = msg_seq_num_reg_4;
+                        msg_seq_num_5 = msg_seq_num_reg_5;
+                        msg_seq_num_6 = msg_seq_num_reg_6;
+                        msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+                5'b00000000:begin
+                        msg_seq_num_0 = msg_seq_num_reg_0;
+                        msg_seq_num_1 = msg_seq_num_reg_1;
+                        msg_seq_num_2 = msg_seq_num_reg_2;
+                        msg_seq_num_3 = msg_seq_num_reg_3;
+                        msg_seq_num_4 = msg_seq_num_reg_4;
+                        msg_seq_num_5 = msg_seq_num_reg_5;
+                        msg_seq_num_6 = msg_seq_num_reg_6;
+                        msg_seq_num_7 = msg_seq_num_reg_7;
+                end
+        endcase
+end
+*/
 
 always@(resend_mode_one,resend_mode_two,resend_mode_three)begin
 	case({resend_mode_one,resend_mode_two,resend_mode_three})
@@ -364,6 +463,7 @@ always @(posedge clk) begin
 
               //resend_ack        <= resend_ack_next;
            //end
+
 	    if(resend_mode_one)begin
 	      resend_ack        <= 1'b1; 
               msg_seq_num_reg_0 <= fix_resend_num_begin[3:0];
@@ -407,6 +507,7 @@ always @(posedge clk) begin
               msg_seq_num_reg_6 <= fix_resend_num_begin[27:24];
               msg_seq_num_reg_7 <= fix_resend_num_begin[31:28];
 	    end
+
             if(msg_seq_num_reg_0 == 4'd10) begin
                         msg_seq_num_reg_0 <= 4'd0;
                         msg_seq_num_reg_1 <= msg_seq_num_reg_1 + 4'd1;

@@ -427,7 +427,7 @@ module op_lut_process_sm
       is_send_logout_next 	  = is_send_logout;
       is_order_pkt		 =0;
       is_connect_pkt		 = 0;
-      //rd_preprocess_done	 = 0;
+      rd_preprocess_done	 = 0;
 
       case(state)
         WAIT_PREPROCESS_RDY: begin
@@ -666,7 +666,7 @@ module op_lut_process_sm
 	end
 	SEND_PKT: begin
 	    if(in_fifo_vld && out_tready) begin
-	      rd_preprocess_done = 0; 
+	      //rd_preprocess_done = 0; 
 	      out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = dst_port;
 	      //out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = 8'h80;
 	      out_tvalid_next	= 1;
