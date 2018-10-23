@@ -298,6 +298,7 @@ module fix_formatter
            end
         end
 */
+/*
 	WAIT_RD_PREPROCESS_DONE: begin
 		if(rd_preprocess_done)begin
 			state_next = HEADER_0;
@@ -306,7 +307,7 @@ module fix_formatter
 			is_send_pkt = 0;
 		end
 	end
-
+*/
 	HEADER_0: begin
 		if(out_tready) begin
 	                //out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00f87a2840004006}, {64'h023c8c7452bd8c74}};
