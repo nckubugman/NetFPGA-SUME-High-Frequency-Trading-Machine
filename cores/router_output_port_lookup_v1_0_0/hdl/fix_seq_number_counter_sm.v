@@ -184,9 +184,11 @@ module fix_seq_number_counter_sm
 assign fix_seq_num_vld = !empty;
 
 always@(tlast,tuser[35:32])begin
+	resend_ack_next = 1'b0;
 	case({tlast,tuser[35:32]})
 		5'b10010:begin
 		   if(resend_mode_one||resend_mode_two||resend_mode_three)begin
+/*
                         msg_seq_num_0 = msg_seq_num_reg_0;
                         msg_seq_num_1 = msg_seq_num_reg_1;
                         msg_seq_num_2 = msg_seq_num_reg_2;
@@ -195,6 +197,18 @@ always@(tlast,tuser[35:32])begin
                         msg_seq_num_5 = msg_seq_num_reg_5;
                         msg_seq_num_6 = msg_seq_num_reg_6;
                         msg_seq_num_7 = msg_seq_num_reg_7;
+*/
+	              resend_ack_next        = 1'b1;
+	              msg_seq_num_0 = fix_resend_num_begin[3:0];
+	              msg_seq_num_1 = fix_resend_num_begin[7:4];
+	              msg_seq_num_2 = fix_resend_num_begin[11:8];
+	              msg_seq_num_3 = fix_resend_num_begin[15:12];
+	              msg_seq_num_4 = fix_resend_num_begin[19:16];
+	              msg_seq_num_5 = fix_resend_num_begin[23:20];
+	              msg_seq_num_6 = fix_resend_num_begin[27:24];
+	              msg_seq_num_7 = fix_resend_num_begin[31:28];
+
+
 		   end
 		   else begin
 		      msg_seq_num_0 = msg_seq_num_reg_0 + 4'd1;
@@ -461,9 +475,9 @@ always @(posedge clk) begin
               resend_end_reg_6  <= resend_end_6 ;
               resend_end_reg_7  <= resend_end_7 ;
 
-              //resend_ack        <= resend_ack_next;
+              resend_ack        <= resend_ack_next;
            //end
-
+/*
 	    if(resend_mode_one)begin
 	      resend_ack        <= 1'b1; 
               msg_seq_num_reg_0 <= fix_resend_num_begin[3:0];
@@ -507,7 +521,7 @@ always @(posedge clk) begin
               msg_seq_num_reg_6 <= fix_resend_num_begin[27:24];
               msg_seq_num_reg_7 <= fix_resend_num_begin[31:28];
 	    end
-
+*/
             if(msg_seq_num_reg_0 == 4'd10) begin
                         msg_seq_num_reg_0 <= 4'd0;
                         msg_seq_num_reg_1 <= msg_seq_num_reg_1 + 4'd1;
