@@ -142,6 +142,7 @@ module fix_formatter
    reg				generate_lock_next;
 //   reg			send_one ;
    reg				send_cross ;
+   reg				send_cross_next;
    reg				send_first;
 
    reg				is_send_pkt_next;
@@ -161,6 +162,7 @@ module fix_formatter
       counter			    = counter_reg;
 	send_one_next 		    = 0;
        is_send_pkt_next 	    = 0;
+	is_send_pkt		    = 0;
 //      in_fifo_rd_en                 = 0;
       send_first		    = 0;
 //      send_cross		    = 1;
@@ -194,6 +196,29 @@ module fix_formatter
 	      else begin
 */
 
+/*
+                if(order_index_out[0] == 1'b1) begin
+		    	if((generate_lock^rd_preprocess_done)==1'b1)begin
+                        	state_next = HEADER_0;
+                        	is_send_pkt = 1;
+				send_first = 1;
+				send_cross = 0;
+		    	end
+		    	else begin
+				state_next = WAIT_PREPROCESS_RDY;
+			end
+                end
+                else begin
+			rd_preprocess_info = 1;
+			if(rd_preprocess_done)begin
+				is_send_pkt = 0;
+			end
+			else begin
+				is_send_pkt = 1;
+			end
+		
+		end
+*/
                 if(order_index_out[0] == 1'b1) begin
 /*
 		   if(counter_reg==0)begin
@@ -202,11 +227,11 @@ module fix_formatter
 		   end
 		   else begin
 */
-		    	if((generate_lock^rd_preprocess_done)==1'b1)begin
+		    	if(((counter_reg==0)^rd_preprocess_done)==1'b1)begin
                         	state_next = HEADER_0;
                         	is_send_pkt_next = 1;
-				send_first = 1;
-				send_cross = 0;
+				//send_first = 1;
+				//send_cross_next = 0;
 		    	end
 		    	else begin
 				state_next = WAIT_PREPROCESS_RDY;
@@ -224,13 +249,14 @@ module fix_formatter
 				send_cross = 0;
 			end
 */
+/*
 			if(rd_preprocess_done)begin
-				send_cross = 0;
+				send_cross_next = 0;
 			end
 			else begin
-				send_cross = 1;
+				send_cross_next = 1;
 			end
-
+*/
 /*
 			send_one = 0 ;
 			counter = 0;
@@ -238,6 +264,30 @@ module fix_formatter
 */
                 end
 
+                      
+/*
+			if(send_one)begin
+				send_cross =1;
+			end
+			else begin
+				send_cross = 0;
+			end
+*/
+/*
+				if(rd_preprocess_done)begin
+					send_cross = 0;
+				end
+				else begin
+					send_cross = 1;
+				end
+*/
+/*
+			send_one = 0 ;
+			counter = 0;
+			is_send_pkt = 0;
+*/
+//	                end
+		
 //	      end
 /*
                 if(order_index_out[0] == 1'b1) begin
@@ -460,6 +510,7 @@ module fix_formatter
          dst_port          <= 'h0;
 	 counter_reg	   <= 'h0;
 //	 send_one	   <= 0;
+	 send_cross	   <= 1;
       end
       else begin
          state             <= state_next;
@@ -472,9 +523,8 @@ module fix_formatter
          dst_port          <= dst_port_next;
 	 counter_reg	   <= counter;
 	 //send_one          <= send_one_next;
-	 if(order_index_out[0]==1'b0)begin
-		counter_reg <= 0 ;
-	 end 
+	 send_cross	   <= send_cross_next ;
+	  
       end // else: !if(reset)
       
    end // always @ (posedge clk)
@@ -483,10 +533,10 @@ module fix_formatter
    always @(posedge clk)begin
 	if(reset)begin
 		generate_lock <= 1;
-		is_send_pkt   <= 0;
+		//is_send_pkt   <= 0;
 	end
 	else begin
-	   is_send_pkt <= is_send_pkt_next;
+	   //is_send_pkt <= is_send_pkt_next;
 	   if(send_cross)begin
 		generate_lock <= 1;
 	   end

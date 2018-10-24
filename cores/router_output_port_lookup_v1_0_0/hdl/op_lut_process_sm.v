@@ -340,8 +340,9 @@ module op_lut_process_sm
    wire			fix_logon_sended;
    wire			fix_heartb_sended;
    wire			fix_testReq_hearb_sended;
-   
-
+  
+   reg			rd_preprocess_done_next; 
+   reg			rd_preprocess_done_sm ;
    ack_module ack_module(.send_ack_sig(send_ack_sig), .out_rdy(ack_rdy), .out_tdata(ack_tdata), .out_tkeep(ack_tkeep), .reset(reset), .clk(clk));
 
 
@@ -427,8 +428,9 @@ module op_lut_process_sm
       is_send_logout_next 	  = is_send_logout;
       is_order_pkt		 =0;
       is_connect_pkt		 = 0;
-      rd_preprocess_done	 = 0;
-
+      //rd_preprocess_done 	 =0 ;
+      //rd_preprocess_done_sm      = 0;
+      //rd_preprocess_done_next    = 0;
       case(state)
         WAIT_PREPROCESS_RDY: begin
 /*
@@ -446,10 +448,10 @@ module op_lut_process_sm
 		pkt_dropped_checksum = 1;
 	   end
 */
-
-
            if(is_send_pkt)begin
-                rd_preprocess_done = 0;
+                //rd_preprocess_done_next = 0;
+		//rd_preprocess_done = 0;
+		rd_preprocess_done_sm = 0;
 		state_next = WAIT_PREPROCESS_RDY;
 		//pkt_sent_from_cpu = 1;
 		pkt_forwarded = 1;
@@ -645,6 +647,7 @@ module op_lut_process_sm
 
 		
   end // case: WAIT_PREPROCESS_RDY
+/*
 	DELAY_CYCLE: begin
 		rd_preprocess_done = 1;
                 dst_port_next = 'h8;
@@ -665,6 +668,7 @@ module op_lut_process_sm
 			pkt_dropped_wrong_dst_mac = 1;
 		end
 	end
+*/
 	SEND_PKT: begin
 	    if(in_fifo_vld && out_tready) begin
 	      //rd_preprocess_done = 0; 
@@ -755,7 +759,9 @@ module op_lut_process_sm
                         is_send_logout_next = 1'b0;
                  end
 		 else if(is_report)begin
-			rd_preprocess_done = 1;
+			//rd_preprocess_done_next = 1;
+			//rd_preprocess_done = 1;
+			rd_preprocess_done_sm = 1;
 			state_next = WAIT_PREPROCESS_RDY;
 		 end
 /*
@@ -1383,6 +1389,7 @@ module op_lut_process_sm
 	 osnt_test	   <= 0;
 	 pkt_sent_to_cpu_lpm_miss <= 0;
 	 fix_connect_start <= 0;
+	 //rd_preprocess_done <= 0;
       end
       else begin
 	 osnt_test 	   <= 1;
@@ -1407,6 +1414,7 @@ module op_lut_process_sm
 	 is_send_logout    <= is_send_logout_next;
 	 pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
 	 fix_connect_start  <= fix_connect_start_next;
+	 //rd_preprocess_done <= rd_preprocess_done_next;
 
       end // else: !if(reset)
    end // always @ (posedge clk)
@@ -1414,8 +1422,17 @@ module op_lut_process_sm
    always @(posedge clk) begin
 	if(reset)begin
 		send_pkt_counter <= 0;
+		rd_preprocess_done <=0;
 	end
 	else begin
+
+		 if(rd_preprocess_done_sm)begin
+			rd_preprocess_done <= 1;
+		 end
+		 else begin
+			rd_preprocess_done <= 0;
+		 end
+
 	         if(fix_connect_start)begin
 	                 if(is_send_pkt||fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
 	                       send_pkt_counter <= 0 ;
