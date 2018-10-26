@@ -452,7 +452,7 @@ module op_lut_process_sm
                 //rd_preprocess_done_next = 0;
 		//rd_preprocess_done = 0;
 		rd_preprocess_done_sm = 0;
-		state_next = WAIT_PREPROCESS_RDY;
+		//state_next = WAIT_PREPROCESS_RDY;
 		//pkt_sent_from_cpu = 1;
 		pkt_forwarded = 1;
            end
@@ -504,6 +504,7 @@ module op_lut_process_sm
 			state_next = SEND_PKT;
 			rd_preprocess_info = 1;
 			//pkt_forwarded = 1;
+			pkt_sent_to_cpu_non_ip = 1;
 			dst_port_next = 'h8;
 			//dst_port_next = output_port ;
 	      end

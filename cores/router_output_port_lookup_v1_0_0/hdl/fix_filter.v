@@ -91,6 +91,7 @@
      reg [255:0]		   resend_pkt_tdata;
      reg [255:0]	           resend_pkt_tdata_two;
 
+     reg [7:0]			   resend_mux;
      reg 			   resend_cal_delay_one;
      reg			   resend_cal_delay_two;
      reg			   resend_cal_delay_three;
@@ -170,6 +171,7 @@ always @(posedge clk) begin
 	resend_cal_delay_five<=0;
 	resend_cal_delay_six<=0;
 	resend_cal_delay_seven<=0;
+	resend_mux <= 8'h0;
     end
     else begin
 	if(valid) begin
@@ -184,7 +186,7 @@ always @(posedge clk) begin
 		//fix_pkt <= 1'b1;
 		//if(tdata[143:128] == 16'h8018 || tdata[143:128] == 16'h8019 ) begin
 		//if(tdata[223:208]==16'he704 && (tdata[143:128]==16'h8018||tdata[143:128]==16'h8019))begin //Dst port
-		if(tdata[223:208==16'he704])begin
+		if(tdata[223:208]==16'he704)begin
 			fix_pkt <= 1'b1;
 		end
 	end
@@ -227,1268 +229,165 @@ always @(posedge clk) begin
 
 	end
 */
-
+/*
 	if(counter == 8'd4 && valid && fix_pkt && resend_pkt)begin
 		//resend_non_dup <= 1'b1;
                 resend_pkt_tdata<= tdata;
-        	if(tdata[167:152] == 16'h373d && tdata[143:136] == 8'h01 ) begin
-                        //if(tdata[143:136] == 8'h01) begin
+        	if(tdata[167:152] == 16'h373d)begin
+			if(tdata[143:136] == 8'h01 ) begin
                                 resend_begin <= {28'h0, tdata[147:144]};
-				//resend_non_dup <=1'b0;
-				if(tdata[103:96]==8'h01)begin //resend_end
-					resend_end <= {28'h0,tdata[107:104]};
-				end
-                                else if(tdata[95:88]==8'h01)begin //resend_end
-					resend_end <= {24'h0,tdata[107:104],tdata[99:96]};
-                                end
-                                else if(tdata[87:80]==8'h01)begin //resend_end
-					resend_end <= {20'h0,tdata[107:104],tdata[99:96],tdata[91:88]};
-                                end
-                                else if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                end
-		else if(tdata[167:152] == 16'h373d && tdata[135:128] == 8'h01) begin
-                        //if(tdata[135:128] == 8'h01) begin
+				resend_mux   <= 1;
+			end
+			else if(tdata[135:128] == 8'h01) begin
                                 resend_begin <= {24'h0,tdata[147:144],tdata[139:136]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[95:88]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[99:96]};
-                                end
-                                else if(tdata[87:80]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[99:96],tdata[91:88]};
-                                end
-                                else if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[99:96],tdata[91:88],tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                end
-		else if(tdata[167:152] == 16'h373d && tdata[127:120] == 8'h01 ) begin
-                        //if(tdata[127:120] == 8'h01) begin
-                                resend_begin <= {20'h0, tdata[147:144],tdata[139:136],tdata[131:128]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[87:80]==8'h01)begin //resend_end
-					resend_end <= {28'h0,tdata[91:88]};
-                                end
-                                else if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[91:88],tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[91:88],tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                end
-		else if(tdata[167:152] == 16'h373d && tdata[119:112] == 8'h01 ) begin
-                        //if(tdata[119:112] == 8'h01) begin
-                                resend_begin <= {16'h0, tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[79:72]==8'h01)begin //resend_end
-					resend_end <= {28'h0,tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                end
-		else if(tdata[167:152] == 16'h373d && tdata[111:104] == 8'h01 ) begin
-        	        //if(tdata[111:104] == 8'h01) begin
-        	                resend_begin <= {12'h0, tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[71:64]==8'h01)begin //resend_end
-					resend_end <= {28'h0,tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-        	end
-		else if(tdata[167:152] == 16'h373d && tdata[103:96] == 8'h01 ) begin
-	                //if(tdata[103:96] == 8'h01) begin
+				resend_mux   <= 2;
+			end
+			else if(tdata[127:120] == 8'h01 ) begin
+				resend_begin <= {20'h0,tdata[147:144],tdata[139:136],tdata[131:128]};
+				resend_mux   <= 3;
+			end
+			else if(tdata[119:112] == 8'h01 ) begin
+                                resend_begin <= {16'h0,tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120]};
+				resend_mux   <= 4;
+			end
+			else if(tdata[111:104] == 8'h01 ) begin
+        	                resend_begin <= {12'h0,tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112]};
+				resend_mux   <= 5;
+			end
+			else if(tdata[103:96] == 8'h01 ) begin
 	                        resend_begin <= {8'h0, tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[63:56]==8'h01)begin //resend_end
-					resend_end <= {28'h0,tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-	        end
-		resend_cal_delay_one<=1;
-/*
-                else if(tdata[159:144] == 16'h373d && tdata[135:128]==8'h01) begin
-                        //if(tdata[135:128] == 8'h01) begin
-                                resend_begin <= {28'h0, tdata[139:136]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[95:88]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[107:104]};
-                                end
-                                else if(tdata[87:80]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[107:104],tdata[99:96]};
-                                end
-                                else if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[107:104],tdata[99:96],tdata[91:88]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
+				resend_mux   <= 6;
+			end
+		end
+		else if(tdata[159:144] == 16'h373d)begin
+			if(tdata[135:128]==8'h01)begin
+				resend_begin <= {28'h0, tdata[139:136]};
+				resend_mux   <= 7;
+			end
+			else if(tdata[127:120]==8'h01)begin
+				resend_begin <= {24'h0, tdata[139:136],tdata[131:128]};
+				resend_mux   <= 8;
+			end
+			else if(tdata[119:112]==8'h01)begin
+				resend_begin <= {20'h0,tdata[139:136],tdata[131:128],tdata[123:120]};
+				resend_mux   <= 9;
+			end
+			else if(tdata[111:104]==8'h01)begin
+				resend_begin <= {16'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112]};
+				resend_mux   <= 10;
+			end
+			else if(tdata[103:96]==8'h01)begin
+				resend_begin <= {12'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104]};
+				resend_mux   <= 11;
+			end
+			else if(tdata[95:88]==8'h01)begin
+				resend_begin <= {8'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96]};
+				resend_mux   <= 12;
+			end
+		end
+		else if(tdata[151:136] == 16'h373d)begin
+                        if(tdata[127:120]==8'h01)begin
+                                resend_begin <= {28'h0, tdata[131:128]};
+				resend_mux   <= 13;
                         end
-
-                else if(tdata[159:144] == 16'h373d && tdata[127:120]==8'h01 ) begin
-                        //if(tdata[127:120] == 8'h01) begin
-                                resend_begin <= {24'h0, tdata[139:136],tdata[131:128]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[87:80]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[91:88]};
-                                end
-                                else if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[91:88],tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[91:88],tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-
+                        else if(tdata[119:112]==8'h01)begin
+                                resend_begin <= {24'h0, tdata[131:128],tdata[123:120]};
+				resend_mux   <= 14;
                         end
-                else if(tdata[159:144] == 16'h373d && tdata[119:112]==8'h01) begin
-                        //if(tdata[119:112] == 8'h01) begin
-                                resend_begin <= {20'h0,tdata[139:136],tdata[131:128],tdata[123:120]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
+                        else if(tdata[111:104]==8'h01)begin
+                                resend_begin <= {20'h0,tdata[131:128],tdata[123:120],tdata[115:112]};
+				resend_mux   <= 15;
                         end
-                else if(tdata[159:144] == 16'h373d && tdata[111:104]==8'h01) begin
-                        //if(tdata[111:104] == 8'h01) begin
-                                resend_begin <= {16'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112]};
-				//resend_non_dup <=1'b0;
-                                if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
+                        else if(tdata[103:96]==8'h01)begin
+                                resend_begin <= {16'h0,tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104]};
+				resend_mux   <= 16;
                         end
-                else if(tdata[159:144] == 16'h373d && tdata[103:96]==8'h01 ) begin
-                        //if(tdata[103:96] == 8'h01) begin
-                                resend_begin <= {12'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
+                        else if(tdata[95:88]==8'h01)begin
+                                resend_begin <= {12'h0,tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96]};
+				resend_mux   <= 17;
                         end
-                else if(tdata[159:144] == 16'h373d && tdata[95:88]==8'h01) begin
-                        //if(tdata[95:88] == 8'h01) begin
-                                resend_begin <= {8'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96]};
-				//resend_non_dup <=1'b0;
-                                if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                        end 
-                else if(tdata[143:128] == 16'h373d&&tdata[119:112]==8'h01) begin
-                        //if(tdata[119:112] == 8'h01) begin //one
-				resend_begin <= {28'h0,tdata[123:120]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[83:80]};
-                                end
-                                else if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[83:80],tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[83:80],tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[83:80],tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
+                        else if(tdata[87:80]==8'h01)begin
+                                resend_begin <= {8'h0,tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88]};
+				resend_mux   <= 18;
                         end
-                else if(tdata[143:128] == 16'h373d&&tdata[111:104]==8'h01) begin
-                        //if(tdata[111:104] == 8'h01) begin //ten
-                                resend_begin <= {24'h0,tdata[123:120],tdata[115:112]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
+		end
+		else if(tdata[143:128] == 16'h373d)begin
+                        if(tdata[119:112]==8'h01)begin
+                                resend_begin <= {28'h0, tdata[123:120]};
+				resend_mux   <= 19;
                         end
-                else if(tdata[143:128] == 16'h373d&&tdata[103:96]==8'h01) begin
-                        //if(tdata[103:96] == 8'h01) begin //hundred
+                        else if(tdata[111:104]==8'h01)begin
+                                resend_begin <= {24'h0, tdata[123:120],tdata[115:112]};
+				resend_mux   <= 20;
+                        end
+                        else if(tdata[103:96]==8'h01)begin
                                 resend_begin <= {20'h0,tdata[123:120],tdata[115:112],tdata[107:104]};
-				//resend_non_dup <= 1'b0;
-                                if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
+				resend_mux   <= 21;
                         end
-                else if(tdata[143:128] == 16'h373d&&tdata[95:88]==8'h01) begin
-                        //if(tdata[95:88] == 8'h01) begin //thousand
+                        else if(tdata[95:88]==8'h01)begin
                                 resend_begin <= {16'h0,tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
+				resend_mux   <= 22;
                         end
-                else if(tdata[143:128] == 16'h373d&&tdata[87:80]==8'h01) begin
-                        //if(tdata[87:80] == 8'h01) begin //ten thousand
+                        else if(tdata[87:80]==8'h01)begin
                                 resend_begin <= {12'h0,tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[51:48],tdata[43:40]};
-                                end
-				else if(tdata[31:24]==8'h01)begin
-                                        resend_end <= {20'h0,tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
+				resend_mux   <= 23;
                         end
-                else if(tdata[143:128] == 16'h373d&&tdata[79:72]==8'h01) begin
-                        //if(tdata[79:72] == 8'h01) begin //ten thousand
+                        else if(tdata[79:72]==8'h01)begin
                                 resend_begin <= {8'h0,tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-                                //if(tdata[7:0]==8'h01)begin //resend_end
-				else begin
-                                        resend_end <= {8'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8],tdata[3:0]};
-                                end
+				resend_mux   <= 24;
                         end
 
-                else if(tdata[135:120] == 16'h373d&&tdata[111:104]==8'h01) begin
-                        //if(tdata[111:104] == 8'h01) begin
-                                resend_begin <= {28'h0,tdata[115:112]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[75:72]};
-                                end
-                                else if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[75:72],tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[75:72],tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[75:72],tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
+		end
+		else if(tdata[135:120] == 16'h373d)begin
+                        if(tdata[111:104]==8'h01)begin
+                                resend_begin <= {28'h0, tdata[115:112]};
+				resend_mux   <= 25;
                         end
-                else if(tdata[135:120] == 16'h373d&&tdata[103:96]==8'h01) begin
-                        //if(tdata[103:96] == 8'h01) begin
-                                resend_begin <= {24'h0,tdata[115:112],tdata[107:104]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
+                        else if(tdata[103:96]==8'h01)begin
+                                resend_begin <= {24'h0, tdata[115:112],tdata[107:104]};
+				resend_mux   <= 26;
                         end
-                else if(tdata[135:120] == 16'h373d&&tdata[95:88]==8'h01) begin
-                        //if(tdata[95:88] == 8'h01) begin
+                        else if(tdata[95:88]==8'h01)begin
                                 resend_begin <= {20'h0,tdata[115:112],tdata[107:104],tdata[99:96]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
+				resend_mux   <= 27;
                         end
-                else if(tdata[135:120] == 16'h373d&&tdata[87:80]==8'h01) begin
-                        //if(tdata[87:80] == 8'h01) begin
+                        else if(tdata[87:80]==8'h01)begin
                                 resend_begin <= {16'h0,tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
+				resend_mux   <= 28;
                         end
-                else if(tdata[135:120] == 16'h373d&&tdata[79:72]==8'h01) begin
-                        //if(tdata[79:72] == 8'h01) begin
+                        else if(tdata[79:72]==8'h01)begin
                                 resend_begin <= {12'h0,tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-				else begin
-					resend_end <= {8'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8],tdata[3:0]};
-				end
+				resend_mux   <= 29;
                         end
-                else if(tdata[135:120] == 16'h373d&&tdata[71:64]==8'h01) begin
-                        //if(tdata[71:64] == 8'h01) begin
+                        else if(tdata[71:64]==8'h01)begin
                                 resend_begin <= {8'h0,tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-                                else begin
-                                        resend_end_check_one <= 1'b1;
-                                        resend_end <= {12'h0,tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8],tdata[3:0]};
-                                end
+				resend_mux   <= 30;
                         end
 
-                else if(tdata[127:112] == 16'h373d&&tdata[103:96]==8'h01) begin
-                        //if(tdata[103:96] == 8'h01) begin
-                                resend_begin <= {28'h0,tdata[107:104]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[67:64]};
-                                end
-                                else if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[67:64],tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[67:64],tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[67:64],tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                        end
-                else if(tdata[127:112] == 16'h373d&&tdata[95:88]==8'h01) begin
-                        //if(tdata[95:88] == 8'h01) begin
-                                resend_begin <= {24'h0,tdata[107:104],tdata[99:96]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[59:56]};
-                                end
-                                else if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[59:56],tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[59:56],tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[59:56],tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                        end
-                else if(tdata[127:112] == 16'h373d&&tdata[87:80]==8'h01) begin
-                        //if(tdata[87:80] == 8'h01) begin
-                                resend_begin <= {20'h0,tdata[107:104],tdata[99:96],tdata[91:88]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[51:48]};
-                                end
-                                else if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[51:48],tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[51:48],tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,tdata[51:48],tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-                        end
-                else if(tdata[127:112] == 16'h373d&&tdata[79:72]==8'h01) begin
-                        //if(tdata[79:72] == 8'h01) begin
-                                resend_begin <= {16'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[43:40]};
-                                end
-                                else if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[43:40],tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[43:40],tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-                                else begin
-                                        resend_end <= {8'h0,tdata[43:40],tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8],tdata[3:0]};
-                                end
-                        end
+		end
+	end
+	*/
 
-                else if(tdata[127:112] == 16'h373d&&tdata[71:64]==8'h01 ) begin
-                        //if(tdata[71:64] == 8'h01) begin
-                                resend_begin <= {12'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[35:32]};
-                                end
-                                else if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[35:32],tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[35:32],tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-				else begin
-					resend_end_check_one <= 1'b1;
-					resend_end <= {12'h0,tdata[35:32],tdata[27:24],tdata[19:16],tdata[11:8],tdata[3:0]};
-				end
+	if(counter == 8'd5 && valid && fix_pkt && resend_pkt)begin
+		resend_pkt_tdata_two<= tdata;
+		resend_cal_delay_one<= 1;
+/*
+                if(resend_end_check_one)begin
+                        if(tdata[247:240]==8'h01)begin
+                                resend_end <= {8'h0,resend_end[19:0],tdata[251:248]};
                         end
-
-                else if(tdata[127:112] == 16'h373d&&tdata[63:56]==8'h01) begin
-                        //if(tdata[63:56] == 8'h01) begin
-                                resend_begin <= {8'h0,tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72],tdata[67:64]};
-                                //resend_non_dup <= 1'b0;
-                                if(tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,tdata[27:24]};
-                                end
-                                else if(tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,tdata[27:24],tdata[19:16]};
-                                end
-                                else if(tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,tdata[27:24],tdata[19:16],tdata[11:8]};
-                                end
-                                else begin
-                                        resend_end_check_two <= 1'b1;
-                                        resend_end <= {16'h0,tdata[27:24],tdata[19:16],tdata[11:8],tdata[3:0]};
-                                end
+                end
+                if(resend_end_check_two)begin
+                        if(tdata[247:240]==8'h01)begin
+                                resend_end <= {12'h0,resend_end[15:0],tdata[251:248]};
                         end
+                        if(tdata[239:232]==8'h01)begin
+                                resend_end <= {8'h0,resend_end[15:0],tdata[251:248],tdata[243:240]};
+                        end
+                end
 */
 	end
-	if(resend_cal_delay_one)begin
-                if(resend_pkt_tdata[159:144] == 16'h373d && resend_pkt_tdata[135:128]==8'h01) begin
-                        //if(resend_pkt_tdata[135:128] == 8'h01) begin
-                                resend_begin <= {28'h0, resend_pkt_tdata[139:136]};
-				//resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[95:88]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[107:104]};
-                                end
-                                else if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
-                                end
-                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
-                                end
-                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                end
-                else if(resend_pkt_tdata[159:144] == 16'h373d && resend_pkt_tdata[127:120]==8'h01 ) begin
-                        //if(resend_pkt_tdata[127:120] == 8'h01) begin
-                                resend_begin <= {24'h0, resend_pkt_tdata[139:136],resend_pkt_tdata[131:128]};
-				//resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[91:88]};
-                                end
-                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
-                                end
-                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-
-                end
-                else if(resend_pkt_tdata[159:144] == 16'h373d && resend_pkt_tdata[119:112]==8'h01) begin
-                        //if(resend_pkt_tdata[119:112] == 8'h01) begin
-                                resend_begin <= {20'h0,resend_pkt_tdata[139:136],resend_pkt_tdata[131:128],resend_pkt_tdata[123:120]};
-				//resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[83:80]};
-                                end
-                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                end
-                else if(resend_pkt_tdata[159:144] == 16'h373d && resend_pkt_tdata[111:104]==8'h01) begin
-                        //if(resend_pkt_tdata[111:104] == 8'h01) begin
-                                resend_begin <= {16'h0,resend_pkt_tdata[139:136],resend_pkt_tdata[131:128],resend_pkt_tdata[123:120],resend_pkt_tdata[115:112]};
-				//resend_non_dup <=1'b0;
-                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                end
-                else if(resend_pkt_tdata[159:144] == 16'h373d && resend_pkt_tdata[103:96]==8'h01 ) begin
-                        //if(resend_pkt_tdata[103:96] == 8'h01) begin
-                                resend_begin <= {12'h0,resend_pkt_tdata[139:136],resend_pkt_tdata[131:128],resend_pkt_tdata[123:120],resend_pkt_tdata[115:112],resend_pkt_tdata[107:104]};
-				//resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                end
-                else if(resend_pkt_tdata[159:144] == 16'h373d && resend_pkt_tdata[95:88]==8'h01) begin
-                        //if(resend_pkt_tdata[95:88] == 8'h01) begin
-                                resend_begin <= {8'h0,resend_pkt_tdata[139:136],resend_pkt_tdata[131:128],resend_pkt_tdata[123:120],resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
-				//resend_non_dup <=1'b0;
-                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                end
-		resend_cal_delay_two<=1;
-	end
-	if(resend_cal_delay_two)begin
-		resend_cal_delay_one <= 0;
-                if(resend_pkt_tdata[143:128] == 16'h373d&&resend_pkt_tdata[119:112]==8'h01) begin
-                        //if(resend_pkt_tdata[119:112] == 8'h01) begin //one
-                                resend_begin <= {28'h0,resend_pkt_tdata[123:120]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[83:80]};
-                                end
-                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                end
-                else if(resend_pkt_tdata[143:128] == 16'h373d&&resend_pkt_tdata[111:104]==8'h01) begin
-                        //if(resend_pkt_tdata[111:104] == 8'h01) begin //ten
-                                resend_begin <= {24'h0,resend_pkt_tdata[123:120],resend_pkt_tdata[115:112]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                end
-
-                else if(resend_pkt_tdata[143:128] == 16'h373d&&resend_pkt_tdata[103:96]==8'h01) begin
-                        //if(resend_pkt_tdata[103:96] == 8'h01) begin //hundred
-                                resend_begin <= {20'h0,resend_pkt_tdata[123:120],resend_pkt_tdata[115:112],resend_pkt_tdata[107:104]};
-				//resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                end
-                else if(resend_pkt_tdata[143:128] == 16'h373d&&resend_pkt_tdata[95:88]==8'h01) begin
-                        //if(resend_pkt_tdata[95:88] == 8'h01) begin //thousand
-                                resend_begin <= {16'h0,resend_pkt_tdata[123:120],resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                end
-                else if(resend_pkt_tdata[143:128] == 16'h373d&&resend_pkt_tdata[87:80]==8'h01) begin
-                        //if(resend_pkt_tdata[87:80] == 8'h01) begin //ten thousand
-                                resend_begin <= {12'h0,resend_pkt_tdata[123:120],resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-				else if(resend_pkt_tdata[31:24]==8'h01)begin
-                                        resend_end <= {20'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                end
-                else if(resend_pkt_tdata[143:128] == 16'h373d&&resend_pkt_tdata[79:72]==8'h01) begin
-                        //if(resend_pkt_tdata[79:72] == 8'h01) begin //ten thousand
-                                resend_begin <= {8'h0,resend_pkt_tdata[123:120],resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                                //if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-				else begin
-                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
-                                end
-                end
-		resend_cal_delay_three <= 1;	
-	end
-	if(resend_cal_delay_three)begin
-               if(resend_pkt_tdata[135:120] == 16'h373d&&resend_pkt_tdata[111:104]==8'h01) begin
-                        //if(resend_pkt_tdata[111:104] == 8'h01) begin
-                                resend_begin <= {28'h0,resend_pkt_tdata[115:112]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[75:72]};
-                                end
-                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                        end
-                else if(resend_pkt_tdata[135:120] == 16'h373d&&resend_pkt_tdata[103:96]==8'h01) begin
-                        //if(resend_pkt_tdata[103:96] == 8'h01) begin
-                                resend_begin <= {24'h0,resend_pkt_tdata[115:112],resend_pkt_tdata[107:104]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                        end
-                else if(resend_pkt_tdata[135:120] == 16'h373d&&resend_pkt_tdata[95:88]==8'h01) begin
-                        //if(resend_pkt_tdata[95:88] == 8'h01) begin
-                                resend_begin <= {20'h0,resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                        end
-                else if(resend_pkt_tdata[135:120] == 16'h373d&&resend_pkt_tdata[87:80]==8'h01) begin
-                        //if(resend_pkt_tdata[87:80] == 8'h01) begin
-                                resend_begin <= {16'h0,resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                        end
-                else if(resend_pkt_tdata[135:120] == 16'h373d&&resend_pkt_tdata[79:72]==8'h01) begin
-                        //if(resend_pkt_tdata[79:72] == 8'h01) begin
-                                resend_begin <= {12'h0,resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-				else begin
-					resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
-				end
-                        end
-                else if(resend_pkt_tdata[135:120] == 16'h373d&&resend_pkt_tdata[71:64]==8'h01) begin
-                        //if(resend_pkt_tdata[71:64] == 8'h01) begin
-                                resend_begin <= {8'h0,resend_pkt_tdata[115:112],resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                                else begin
-                                        resend_end_check_one <= 1'b1;
-                                        resend_end <= {12'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
-                                end
-                end
-		resend_cal_delay_four<=1;
-	end
-	if(resend_cal_delay_four)begin
-                if(resend_pkt_tdata[127:112] == 16'h373d&&resend_pkt_tdata[103:96]==8'h01) begin
-                        //if(resend_pkt_tdata[103:96] == 8'h01) begin
-                                resend_begin <= {28'h0,resend_pkt_tdata[107:104]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
-                                end
-                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                end
-                else if(resend_pkt_tdata[127:112] == 16'h373d&&resend_pkt_tdata[95:88]==8'h01) begin
-                        //if(resend_pkt_tdata[95:88] == 8'h01) begin
-                                resend_begin <= {24'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[59:56]};
-                                end
-                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                end
-                else if(resend_pkt_tdata[127:112] == 16'h373d&&resend_pkt_tdata[87:80]==8'h01) begin
-                        //if(resend_pkt_tdata[87:80] == 8'h01) begin
-                                resend_begin <= {20'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[51:48]};
-                                end
-                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                end
-                else if(resend_pkt_tdata[127:112] == 16'h373d&&resend_pkt_tdata[79:72]==8'h01) begin
-                        //if(resend_pkt_tdata[79:72] == 8'h01) begin
-                                resend_begin <= {16'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[43:40]};
-                                end
-                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                                else begin
-                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
-                                end
-                end
-
-                else if(resend_pkt_tdata[127:112] == 16'h373d&&resend_pkt_tdata[71:64]==8'h01 ) begin
-                        //if(resend_pkt_tdata[71:64] == 8'h01) begin
-                                resend_begin <= {12'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[35:32]};
-                                end
-                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {16'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-				else begin
-					resend_end_check_one <= 1'b1;
-					resend_end <= {12'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
-				end
-                end
-
-                else if(resend_pkt_tdata[127:112] == 16'h373d&&resend_pkt_tdata[63:56]==8'h01) begin
-                        //if(resend_pkt_tdata[63:56] == 8'h01) begin
-                                resend_begin <= {8'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
-                                //resend_non_dup <= 1'b0;
-                                if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
-                                        resend_end <= {28'h0,resend_pkt_tdata[27:24]};
-                                end
-                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
-                                        resend_end <= {24'h0,resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
-                                end
-                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
-                                        resend_end <= {20'h0,resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
-                                end
-                                else begin
-                                        resend_end_check_two <= 1'b1;
-                                        resend_end <= {16'h0,resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
-                                end
-                end
-		resend_cal_delay_five<=1;
-	end
-
-	if(counter == 8'd5 && valid )begin
-		resend_pkt_tdata_two<= tdata;
-		resend_cal_delay_six<= 1;
-	end
+/*
 	if(resend_cal_delay_five && resend_cal_delay_six)begin
                 if(resend_end_check_one)begin
                         if(resend_pkt_tdata_two[247:240]==8'h01)begin
@@ -1505,14 +404,393 @@ always @(posedge clk) begin
                 end
 		resend_cal_delay_seven <= 1;
 	end
+*/
+/*
+	if(resend_cal_delay_one)begin
+		case(resend_mux)
+			//--167:152
+			8'd1 : begin
+				if(resend_pkt_tdata[103:96]==8'h01)begin
+					resend_end <= {28'h0,resend_pkt_tdata[107:104]}; 
+				end
+				else if(resend_pkt_tdata[95:88]==8'h01)begin
+					resend_end <= {24'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
+				end
+				else if(resend_pkt_tdata[87:80]==8'h01)begin
+					resend_end <= {20'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+				end
+				else if(resend_pkt_tdata[79:72]==8'h01)begin
+					resend_end <= {16'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+				end
+				else if(resend_pkt_tdata[71:64]==8'h01)begin
+					resend_end <= {12'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+				end
+				else if(resend_pkt_tdata[63:56]==8'h01)begin
+					resend_end <= {8'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+				end
+			end
+			8'd2 : begin
+                                if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+                                end
+                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+			end
+			8'd3 : begin
+                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+			end
+			8'd4 : begin
+                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+			end
+			8'd5 : begin
+                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+			end
+                        8'd6 : begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                        end
+			//159:144
+                        8'd7 : begin
+                                if(resend_pkt_tdata[95:88]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[99:96]};
+                                end
+                                else if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+                                end
+                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                        end
+                        8'd8 : begin
+                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                        end
+                        8'd9 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                        end
+                        8'd10 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd11 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+			8'd12 : begin
+				resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+			end
+                        8'd13 : begin
+                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                        end
+                        8'd14 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd15 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+                        8'd16 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                        end
+                        8'd17 : begin
+                                if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                        end
+                        8'd18 : begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+                        end
+                        8'd19 : begin
+                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd20 : begin
+                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+                        8'd21 : begin
+                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                        end
+                        8'd22 : begin
+                                if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                        end
+                        8'd23 : begin
+                                if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+				else begin
+					resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+				end
+                        end
+                        8'd24 : begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],resend_pkt_tdata_two[251:248]};
+                        end
+                        8'd25 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+                        8'd26 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                        end
+                        8'd27 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                        end
+                        8'd28 : begin
+                                if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                                else begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+                                end
+                        end
+                        8'd29 : begin
+                                if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+				else begin
+					resend_end <= {8'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],resend_pkt_tdata_two[251:248]};
+				end
+                        end
+                        8'd30 : begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],resend_pkt_tdata_two[251:248],resend_pkt_tdata_two[243:240]};
+                        end
 
 
+			
 
-       if(tlast && valid && (resend_pkt==1'b0)) begin
+		endcase
+
+		resend_cal_delay_two<= 1;		
+
+	end
+*/
+//       if(tlast && valid && (resend_pkt==1'b0)) begin
+       if(tlast && valid )begin
 		check_done <= 1'b1;
 		end_state  <= 1'b1;
        end 
-       if(resend_pkt&&resend_cal_delay_seven)begin
+       if(resend_pkt&&resend_cal_delay_two)begin
 		check_done <= 1'b1;
 		end_state  <= 1'b1;
        end
@@ -1565,7 +843,7 @@ always @(posedge clk) begin
                 //resend_num <= 'h0;
         end
         else begin
-	    if(resend_pkt&&resend_cal_delay_seven&&valid)begin		
+	    if(resend_pkt&&resend_cal_delay_two&&valid)begin		
 	        if(resend_end=='b0)begin //end =0
 			resend_mode_three <='b1;
 			resend_begin_fix_seq_num[3:0] <= resend_begin[3:0];

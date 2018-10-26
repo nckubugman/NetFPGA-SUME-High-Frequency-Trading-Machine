@@ -168,7 +168,7 @@ module fix_formatter
 //      send_cross		    = 1;
       case(state)
         WAIT_PREPROCESS_RDY: begin
-/*
+
 	  if(parse_order_vld && out_tready) begin
 		if(order_index_out[0] == 1'b1) begin	
 			state_next = HEADER_0;
@@ -178,10 +178,10 @@ module fix_formatter
 	                rd_preprocess_info          = 1;
 		end
 	  end
-*/
 
-          if(parse_order_vld && out_tready) begin
 /*
+          if(parse_order_vld && out_tready) begin
+
 	      if(send_one==0)begin
                 if(order_index_out[0] == 1'b1) begin
                         state_next = HEADER_0;
@@ -219,14 +219,9 @@ module fix_formatter
 		
 		end
 */
-                if(order_index_out[0] == 1'b1) begin
 /*
-		   if(counter_reg==0)begin
-			state_next = HEADER_0;
-			send_one = 1;
-		   end
-		   else begin
-*/
+                if(order_index_out[0] == 1'b1) begin
+
 		    	if(((counter_reg==0)^rd_preprocess_done)==1'b1)begin
                         	state_next = HEADER_0;
                         	is_send_pkt_next = 1;
@@ -236,11 +231,10 @@ module fix_formatter
 		    	else begin
 				state_next = WAIT_PREPROCESS_RDY;
 			end
-
-//		   end
                 end
-                else begin
-                        rd_preprocess_info          = 1;
+*/
+//                else begin
+//                        rd_preprocess_info          = 1;
 /*
 			if(send_one)begin
 				send_cross =1;
@@ -262,7 +256,7 @@ module fix_formatter
 			counter = 0;
 			is_send_pkt = 0;
 */
-                end
+//                end
 
                       
 /*
@@ -323,7 +317,7 @@ module fix_formatter
 */
 
 	      
-          end
+//          end
 
         end // case: WAIT_PREPROCESS_RDY
 /*
