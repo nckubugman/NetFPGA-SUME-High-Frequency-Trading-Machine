@@ -154,6 +154,7 @@ module op_lut_process_sm
    input			      is_session_reject,
    input			      is_order_cancel_reject,
 
+
    // --- connect_signal
    input  [31:0]		      cpu2ip_connect_signal_reg, 
 
@@ -340,9 +341,8 @@ module op_lut_process_sm
    wire			fix_logon_sended;
    wire			fix_heartb_sended;
    wire			fix_testReq_hearb_sended;
-  
-   reg			rd_preprocess_done_next; 
-   reg			rd_preprocess_done_sm ;
+   
+
    ack_module ack_module(.send_ack_sig(send_ack_sig), .out_rdy(ack_rdy), .out_tdata(ack_tdata), .out_tkeep(ack_tkeep), .reset(reset), .clk(clk));
 
 
@@ -428,9 +428,8 @@ module op_lut_process_sm
       is_send_logout_next 	  = is_send_logout;
       is_order_pkt		 =0;
       is_connect_pkt		 = 0;
-      //rd_preprocess_done 	 =0 ;
-      //rd_preprocess_done_sm      = 0;
-      //rd_preprocess_done_next    = 0;
+//      rd_preprocess_done	 = 0;
+
       case(state)
         WAIT_PREPROCESS_RDY: begin
 /*
@@ -448,15 +447,14 @@ module op_lut_process_sm
 		pkt_dropped_checksum = 1;
 	   end
 */
+/*
+
            if(is_send_pkt)begin
-                //rd_preprocess_done_next = 0;
-		//rd_preprocess_done = 0;
-		rd_preprocess_done_sm = 0;
-		//state_next = WAIT_PREPROCESS_RDY;
-		//pkt_sent_from_cpu = 1;
-		pkt_forwarded = 1;
+                rd_preprocess_done = 0;
+		state_next = WAIT_PREPROCESS_RDY;
+		pkt_sent_from_cpu = 1;
            end
-	     
+*/	     
 
            if(preprocess_vld) begin
               /* if the packet is from the CPU then all the info on it is correct.
@@ -504,8 +502,8 @@ module op_lut_process_sm
 			state_next = SEND_PKT;
 			rd_preprocess_info = 1;
 			//pkt_forwarded = 1;
-			pkt_sent_to_cpu_non_ip = 1;
-			dst_port_next = 'h8;
+			pkt_forwarded   = 1;
+			dst_port_next = 'h10;
 			//dst_port_next = output_port ;
 	      end
 
@@ -516,7 +514,7 @@ module op_lut_process_sm
               //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
                      //pkt_sent_to_cpu_options_ver   = 1;
                      to_from_cpu_next   = 0;
-                     dst_port_next      = output_port;
+                     dst_port_next      = 'h40;
                      state_next         = ACK_GEN_1;
 		     //state_next 	= SEND_PKT ;
                     // pkt_forwarded      = 1;
@@ -529,7 +527,7 @@ module op_lut_process_sm
                  //else if(is_ip_pkt && ip_checksum_is_good && (is_fix && is_logon))begin
                      //pkt_sent_to_cpu_options_ver   = 1;
                      to_from_cpu_next   = 0;
-                     dst_port_next      = output_port;
+                     dst_port_next      = 'h40;
                      state_next         = TEST_REQ_HEARTBEAT_GEN_1;
                      //pkt_sent_to_cpu_bad_ttl = 1 ;
               end
@@ -537,7 +535,7 @@ module op_lut_process_sm
 
 
 
-              else if(is_ip_pkt && is_fix && (is_report||is_order_cancel_reject) ) begin
+              else if(is_ip_pkt && is_fix && is_report ) begin
 	   	    // if(order_index_out[0]=='b0)begin
                      	//pkt_sent_to_cpu_options_ver   = 1;
                      	to_from_cpu_next   = 0;
@@ -546,7 +544,6 @@ module op_lut_process_sm
                      	//state_next         = DELAY_CYCLE;
 			//state_next  = SEND_REPORT_PKT;
 			state_next = SEND_REPORT_PKT;
-			//state_next = ACK_GEN_1;
                      	pkt_sent_to_cpu_bad_ttl = 1 ;
                      	dst_port_next = 'h10;
 		    // end
@@ -560,12 +557,6 @@ module op_lut_process_sm
                         dst_port_next = 'h8;
 		     end
 */
-              end
-
-              else if(is_ip_pkt &&  is_fix && is_session_reject) begin
-                     to_from_cpu_next   = 0;
-                     dst_port_next      = 'h10;
-                      state_next         =  SEND_PKT;
               end
 
 
@@ -626,12 +617,12 @@ module op_lut_process_sm
            
 	else if(counter == 'b0 && cpu2ip_connect_signal_reg == 1) begin
 		dst_port_next		    = output_port;
-		//pkt_forwarded		    = 1;	
+		pkt_forwarded		    = 1;	
 		state_next = SYN_GEN_1;
 	end
         else if(counter_for_shutdown == 'b0 && cpu2ip_shutdown_signal_reg == 1) begin
 		dst_port_next		    = output_port;
-                //pkt_forwarded               = 1;
+                pkt_forwarded               = 1;
                 state_next = LOGOUT_GEN_1;
         end
 /*
@@ -648,7 +639,6 @@ module op_lut_process_sm
 
 		
   end // case: WAIT_PREPROCESS_RDY
-/*
 	DELAY_CYCLE: begin
 		rd_preprocess_done = 1;
                 dst_port_next = 'h8;
@@ -669,10 +659,9 @@ module op_lut_process_sm
 			pkt_dropped_wrong_dst_mac = 1;
 		end
 	end
-*/
 	SEND_PKT: begin
 	    if(in_fifo_vld && out_tready) begin
-	      //rd_preprocess_done = 0; 
+	      rd_preprocess_done = 0; 
 	      out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = dst_port;
 	      //out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = 8'h80;
 	      out_tvalid_next	= 1;
@@ -694,7 +683,6 @@ module op_lut_process_sm
               in_fifo_rd_en     = 1;
 
               if(in_fifo_tlast) begin
-		 send_ack_sig = 1'b1;
                  state_next =  ACK_GEN_1;
                  //rd_preprocess_done = 1;
                  //rd_preprocess_info          = 1;
@@ -760,9 +748,7 @@ module op_lut_process_sm
                         is_send_logout_next = 1'b0;
                  end
 		 else if(is_report)begin
-			//rd_preprocess_done_next = 1;
-			//rd_preprocess_done = 1;
-			rd_preprocess_done_sm = 1;
+			rd_preprocess_done = 1;
 			state_next = WAIT_PREPROCESS_RDY;
 		 end
 /*
@@ -1390,7 +1376,6 @@ module op_lut_process_sm
 	 osnt_test	   <= 0;
 	 pkt_sent_to_cpu_lpm_miss <= 0;
 	 fix_connect_start <= 0;
-	 //rd_preprocess_done <= 0;
       end
       else begin
 	 osnt_test 	   <= 1;
@@ -1415,7 +1400,6 @@ module op_lut_process_sm
 	 is_send_logout    <= is_send_logout_next;
 	 pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
 	 fix_connect_start  <= fix_connect_start_next;
-	 //rd_preprocess_done <= rd_preprocess_done_next;
 
       end // else: !if(reset)
    end // always @ (posedge clk)
@@ -1423,17 +1407,8 @@ module op_lut_process_sm
    always @(posedge clk) begin
 	if(reset)begin
 		send_pkt_counter <= 0;
-		rd_preprocess_done <=0;
 	end
 	else begin
-
-		 if(rd_preprocess_done_sm)begin
-			rd_preprocess_done <= 1;
-		 end
-		 else begin
-			rd_preprocess_done <= 0;
-		 end
-
 	         if(fix_connect_start)begin
 	                 if(is_send_pkt||fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
 	                       send_pkt_counter <= 0 ;

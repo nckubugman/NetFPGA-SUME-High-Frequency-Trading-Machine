@@ -261,8 +261,10 @@ module ip_feed_fix_parser
    wire					is_order_pkt ;
    wire					rd_preprocess_done;
 
+
    wire					is_session_reject;
    wire					is_order_cancel_reject;
+
    // Control signals
    assign s_axis_tready = ~in_fifo_nearly_full ;
    
@@ -272,7 +274,7 @@ module ip_feed_fix_parser
    
    /* The size of this fifo has to be large enough to fit the previous modules' headers
     * and the ethernet header */
-   fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(10))
+   fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(15))
       input_fifo
         (.din ({s_axis_tlast, s_axis_tuser, s_axis_tkeep, s_axis_tdata}),	// Data in
          .wr_en (s_axis_tvalid & ~in_fifo_nearly_full),				// Write enable
@@ -495,8 +497,8 @@ module ip_feed_fix_parser
 	 .is_testReq (is_testReq),
 	 .is_logout(is_logout),
 	 .is_fix_order(is_fix_order),
-         .is_session_reject(is_session_reject),
-         .is_order_cancel_reject(is_order_cancel_reject),
+	 .is_session_reject (is_session_reject),
+	 .is_order_cancel_reject(is_order_cancel_reject),
 
 	  // -- Connect siganl
     	 .cpu2ip_connect_signal_reg          (cpu2ip_connect_signal_reg),
@@ -535,7 +537,6 @@ module ip_feed_fix_parser
 
 	 .is_connect_pkt(is_connect_pkt),
 	 .is_order_pkt(is_order_pkt),
-	 
 
 	 .send_one(send_one),
 	 .is_send_pkt(is_send_pkt),
@@ -619,6 +620,7 @@ module ip_feed_fix_parser
 	  .is_fix_order		     (is_fix_order),
 	  .is_session_reject	     (is_session_reject),
 	  .is_order_cancel_reject    (is_order_cancel_reject),
+
 
           .resend_begin		     (fix_resend_num_begin),
 	  .resend_end		     (fix_resend_num_end),
