@@ -151,6 +151,7 @@ module op_lut_process_sm
    input			      is_heartbeat,
    input			      is_testReq,
    input			      is_logout,
+
    input			      is_session_reject,
    input			      is_order_cancel_reject,
 
@@ -189,9 +190,8 @@ module op_lut_process_sm
    output reg is_connect_pkt,
    output reg is_order_pkt,
 
-   input    send_one,
    input    is_send_pkt, 
-   output reg rd_preprocess_done,
+   output reg  rd_preprocess_done,
 //   input[216:0]                         order_index_out,
    input [240:0]			  order_index_out,
    // misc
@@ -342,6 +342,8 @@ module op_lut_process_sm
    wire			fix_heartb_sended;
    wire			fix_testReq_hearb_sended;
    
+   reg          rd_preprocess_done_sm ;
+   reg          rd_preprocess_done_sm_next;
 
    ack_module ack_module(.send_ack_sig(send_ack_sig), .out_rdy(ack_rdy), .out_tdata(ack_tdata), .out_tkeep(ack_tkeep), .reset(reset), .clk(clk));
 
@@ -364,9 +366,11 @@ module op_lut_process_sm
    assign is_fix_logon = is_ip_pkt && is_fix && is_logon;
    assign is_fix_report = is_ip_pkt && is_fix && is_report;
    assign is_ack = is_ip_pkt && is_tcp_ack;
-  assign send_ack_signal = send_ack_sig;
+   assign send_ack_signal = send_ack_sig;
 
    assign output_port = 'h2;  //CPU0
+
+   //assign rd_preprocess_done = rd_preprocess_done_sm;
 
    /* select the src mac address to write in the forwarded pkt */
    /*always @(*) begin
@@ -428,142 +432,84 @@ module op_lut_process_sm
       is_send_logout_next 	  = is_send_logout;
       is_order_pkt		 =0;
       is_connect_pkt		 = 0;
-//      rd_preprocess_done	 = 0;
-
+      //rd_preprocess_done_sm_next = 0;
+      rd_preprocess_done 	=0;
       case(state)
         WAIT_PREPROCESS_RDY: begin
-/*
-	   if(is_send_pkt)begin
-		send_pkt_counter_next = 0 ;
-	   end
-	   else begin
-		send_pkt_counter_next = send_pkt_counter_next + 1;
-	   end
-*/
-/*
-	   if(send_one==0)begin
-		rd_preprocess_done = 1;
-		state_next = WAIT_PREPROCESS_RDY;
-		pkt_dropped_checksum = 1;
-	   end
-*/
-/*
 
            if(is_send_pkt)begin
-                rd_preprocess_done = 0;
-		state_next = WAIT_PREPROCESS_RDY;
-		pkt_sent_from_cpu = 1;
+                //rd_preprocess_done_sm_next  = 0;
+		rd_preprocess_done = 0;
+        	//state_next = WAIT_PREPROCESS_RDY;
+	        pkt_sent_from_cpu = 1;
            end
-*/	     
+	   else begin
+		//rd_preprocess_done_sm_next = 1;
+		rd_preprocess_done = 1;
+	   end
+	     
 
            if(preprocess_vld) begin
               /* if the packet is from the CPU then all the info on it is correct.
                * We just pipe it to the output */
-	      is_op_send_pkt =  1 ;
-/*
-	     if(is_send_pkt)begin
-		rd_preprocess_info = 1;
-		state_next = WAIT_PREPROCESS_RDY ;
-	     end
-*/   
-             if(is_from_cpu) begin
-                 to_from_cpu_next     = 1;
-                 dst_port_next        = from_cpu_output_port;
-                 rd_preprocess_info   = 1;
-                 //state_next           = MOVE_TUSER;
-                 state_next           = DROP_PKT;
-                 //pkt_sent_from_cpu    = 1;
-                 //pkt_sent_to_cpu_non_ip      = 1;
-              end
-	
+	            is_op_send_pkt =  1 ;
               /* check that the port on which it was received matches its mac */
               //else if(is_for_us && (input_port_num==mac_dst_port_num || is_broadcast)) begin
               //if((is_for_us) && (input_port_num==mac_dst_port_num || is_broadcast)) begin
-                 if(is_ip_pkt && ip_checksum_is_good && is_ip_feed && is_udp_pkt && udp_checksum_is_good ) begin
+              if(ip_checksum_is_good && is_ip_feed && is_udp_pkt && udp_checksum_is_good ) begin
                  	state_next                  = SEND_PKT;
 			//pkt_forwarded		    = 1;
-			//dst_port_next		   = 'h01;
-			//pkt_sent_to_cpu_bad_ttl    = 1;
+			//dst_port_next		    = 'h01;
+			pkt_sent_to_cpu_bad_ttl   = 1;
                  	rd_preprocess_info          = 1;
-			dst_port_next               = output_port;
-		 end
-/*
-                 else begin
-                        state_next                  = DROP_PKT;
-                        rd_preprocess_info          = 1;
-                        in_fifo_rd_en               = 1;
-                 end
-*/
-	      //end
-
-	      //else if(is_ip_pkt &&  is_fix_order)begin  // For without ip_checksum (wade trace file)
-
+		       	dst_port_next               = output_port;
+	      end 
 	      else if(is_ip_pkt && is_fix_order)begin
 			state_next = SEND_PKT;
 			rd_preprocess_info = 1;
-			//pkt_forwarded = 1;
-			pkt_forwarded   = 1;
+			pkt_forwarded = 1;
 			dst_port_next = 'h10;
 			//dst_port_next = output_port ;
 	      end
-
-	 
               //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_logon) || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
               //else if(is_ip_pkt && (is_tcp_hand_shake ||  (is_fix && is_logon) || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
-              else if(is_ip_pkt && (is_tcp_hand_shake ||  (is_fix && is_logon) || (is_fix && is_heartbeat))) begin
+              else if(is_tcp_hand_shake ||   is_logon || is_heartbeat) begin
               //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
                      //pkt_sent_to_cpu_options_ver   = 1;
                      to_from_cpu_next   = 0;
-                     dst_port_next      = 'h40;
+                     dst_port_next      = output_port;
                      state_next         = ACK_GEN_1;
 		     //state_next 	= SEND_PKT ;
-                    // pkt_forwarded      = 1;
+                     pkt_forwarded      = 1;
 		     //pkt_sent_to_cpu_arp_miss = 1 ;
 		     fix_connect_start_next  = 1 ; 
                      send_ack_sig       = 1'b1;
               end
-              else if(is_ip_pkt && is_fix && is_testReq) begin
+              else if(is_testReq) begin
             //  else if(is_ip_pkt && is_fix&& is_testReq)begin
                  //else if(is_ip_pkt && ip_checksum_is_good && (is_fix && is_logon))begin
                      //pkt_sent_to_cpu_options_ver   = 1;
                      to_from_cpu_next   = 0;
-                     dst_port_next      = 'h40;
+                     dst_port_next      = output_port;
                      state_next         = TEST_REQ_HEARTBEAT_GEN_1;
                      //pkt_sent_to_cpu_bad_ttl = 1 ;
               end
-          
-
-
-
-              else if(is_ip_pkt && is_fix && is_report ) begin
+              else if( is_report ) begin
 	   	    // if(order_index_out[0]=='b0)begin
                      	//pkt_sent_to_cpu_options_ver   = 1;
                      	to_from_cpu_next   = 0;
-			//rd_preprocess_done = 1;
-			//rd_preprocess_info = 1;
+			  //rd_preprocess_done = 1;
+			            //rd_preprocess_info = 1;
                      	//state_next         = DELAY_CYCLE;
 			//state_next  = SEND_REPORT_PKT;
 			state_next = SEND_REPORT_PKT;
+                        //rd_preprocess_done_sm_next = 0;
                      	pkt_sent_to_cpu_bad_ttl = 1 ;
                      	dst_port_next = 'h10;
-		    // end
-/*
-		     else begin
-			to_from_cpu_next   = 0; 
-			pkt_forwarded	   = 1;
-			rd_preprocess_done = 1;
-			rd_preprocess_info = 1;
-			state_next = SEND_PKT;
-                        dst_port_next = 'h8;
-		     end
-*/
               end
 
-
-
-            
               //else if(is_fix && (is_send_logout=='b0)) begin
-              else if(is_ip_pkt&&is_fix && is_logout )begin
+              else if( is_logout )begin
                  //else if(is_ip_pkt && ip_checksum_is_good && (is_fix && is_logon))begin
                      //pkt_sent_to_cpu_options_ver   = 1;
 		     //fix_logout_trigger = 1;
@@ -574,12 +520,12 @@ module op_lut_process_sm
                      	state_next         = LOGOUT_GEN_1;
 		     end
 		     else begin
-			fix_logout_trigger = 1;
-			state_next = WAIT_PREPROCESS_RDY ;
+			  state_next = WAIT_PREPROCESS_RDY ;
+			  fix_logout_trigger = 1;	
 		     end
                     
               end
-              else if(is_ip_pkt &&  is_fix && is_tcp_fin) begin
+              else if(is_tcp_fin) begin
                      //pkt_sent_to_cpu_options_ver   = 1;
                      to_from_cpu_next   = 0;
                      dst_port_next      = output_port;
@@ -588,10 +534,7 @@ module op_lut_process_sm
                      //pkt_sent_to_cpu_arp_miss = 1 ;
                      send_ack_sig       = 1'b1;
               end
-
-
-
-              else if(is_ip_pkt &&  is_fix && is_resend) begin
+              else if(is_resend) begin
                      //pkt_sent_to_cpu_options_ver   = 1;
                      to_from_cpu_next   = 0;
                      dst_port_next      = output_port;
@@ -601,8 +544,6 @@ module op_lut_process_sm
                      send_ack_sig       = 1'b1;
 		     fix_resend_trigger = 1;
               end
-
-
 	      else begin // pkt not for us
                  //pkt_sent_to_cpu_non_ip      = 1;
                 // pkt_dropped_wrong_dst_mac   = 1;
@@ -616,7 +557,6 @@ module op_lut_process_sm
 	end
            
 	else if(counter == 'b0 && cpu2ip_connect_signal_reg == 1) begin
-		dst_port_next		    = output_port;
 		pkt_forwarded		    = 1;	
 		state_next = SYN_GEN_1;
 	end
@@ -636,32 +576,28 @@ module op_lut_process_sm
 	else if(send_pkt_counter == 32'hFFFFFFFF) begin
 		state_next = HEARTBEAT_GEN_1;
 	end
-
+	else begin
+		state_next = WAIT_PREPROCESS_RDY ;
+	end
 		
   end // case: WAIT_PREPROCESS_RDY
-	DELAY_CYCLE: begin
-		rd_preprocess_done = 1;
-                dst_port_next = 'h8;
-
-		state_next = SEND_PKT ;
-	end
 	WAIT_TCP_ACK: begin
                 if(is_tcp_ack)begin
-                        rd_preprocess_done = 1;
+                        //rd_preprocess_done = 1;
 			rd_preprocess_info = 1;
 			state_next =  WAIT_PREPROCESS_RDY;
 			pkt_dropped_checksum = 1;
                 end
 		else begin
 			rd_preprocess_info = 0;
-			rd_preprocess_done = 0;
+			//rd_preprocess_done = 0;
 			state_next = WAIT_TCP_ACK;
 			pkt_dropped_wrong_dst_mac = 1;
 		end
 	end
 	SEND_PKT: begin
 	    if(in_fifo_vld && out_tready) begin
-	      rd_preprocess_done = 0; 
+	      //rd_preprocess_done = 0; 
 	      out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = dst_port;
 	      //out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = 8'h80;
 	      out_tvalid_next	= 1;
@@ -676,7 +612,7 @@ module op_lut_process_sm
 	end
 	SEND_REPORT_PKT: begin
             if(in_fifo_vld && out_tready) begin
-              //rd_preprocess_done = 0;
+              rd_preprocess_done_sm_next = 0;
               out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = dst_port;
               //out_tuser_next[C_AXIS_DST_PORT_POS+7:C_AXIS_DST_PORT_POS] = 8'h80;
               out_tvalid_next   = 1;
@@ -689,45 +625,7 @@ module op_lut_process_sm
               end
             end
 	end
-/*
-        DROP_PKT: begin
-           if(in_fifo_vld) begin
-              in_fifo_rd_en = 1;
-              if(in_fifo_tlast&&in_fifo_vld) begin
-                 rd_preprocess_info          = 1;
-                 //state_next = (is_tcp_hand_shake)? LOGON_GEN_1: WAIT_PREPROCESS_RDY;
-		 if(is_tcp_hand_shake)begin
-			state_next = LOGON_GEN_1;
-			is_send_logout_next = 1'b0;
-		 end
-		
-		 else if(is_testReq)begin
-			state_next = TEST_REQ_HEARTBEAT_GEN_1;
-		 end
-	
-		else if(is_resend)begin
-			state_next = HEARTBEAT_GEN_1	;
-		end
-		else if(is_logon)begin
-			fix_logon_trigger = 1;
-			state_next = WAIT_PREPROCESS_RDY;
-		end
-		else if(is_tcp_fin)begin
-			tcp_logout_handshake_trigger = 1;
-			state_next = WAIT_PREPROCESS_RDY;
-		end
-		else if(is_logout)begin
-			fix_logout_trigger = 1;
-			state_next = WAIT_PREPROCESS_RDY;
-		end
-		else begin
-			state_next = WAIT_PREPROCESS_RDY;
-		end
-	      end
-           end
-        end
-*/
-        DROP_PKT: begin
+    DROP_PKT: begin
            if(in_fifo_vld) begin
               in_fifo_rd_en = 1;
               if(in_fifo_tlast) begin
@@ -735,9 +633,9 @@ module op_lut_process_sm
                  //rd_preprocess_info          = 1;
               end
            end
-        end
+    end
 
-        NEXT_CONNECT_PKT: begin
+    NEXT_CONNECT_PKT: begin
            if(in_fifo_vld) begin
               in_fifo_rd_en = 1;
               if(in_fifo_tlast&&in_fifo_vld) begin
@@ -747,10 +645,11 @@ module op_lut_process_sm
                         state_next = LOGON_GEN_1;
                         is_send_logout_next = 1'b0;
                  end
-		 else if(is_report)begin
-			rd_preprocess_done = 1;
-			state_next = WAIT_PREPROCESS_RDY;
-		 end
+  	    	     else if(is_report)begin
+		    	        //rd_preprocess_done_sm_next = 1;
+				rd_preprocess_done = 1;
+			            state_next = WAIT_PREPROCESS_RDY;
+		         end
 /*
                  else if(is_testReq)begin
                         state_next = TEST_REQ_HEARTBEAT_GEN_1;
@@ -767,10 +666,12 @@ module op_lut_process_sm
                         tcp_logout_handshake_trigger = 1;
                         state_next = WAIT_PREPROCESS_RDY;
                 end
+/*
                 else if(is_logout)begin
-                        fix_logout_trigger = 1;
+                        //fix_logout_trigger = 1;
                         state_next = WAIT_PREPROCESS_RDY;
                 end
+*/
                 /*
                  else if(is_logout&&is_send_logout=='b0)begin
                         state_next = LOGOUT_GEN_1;
@@ -789,65 +690,64 @@ module op_lut_process_sm
                  end
               end
            end
-        end
+    end
 
-        SYN_GEN_1: begin
+    SYN_GEN_1: begin
            if(out_tready) begin
 	      	out_tvalid_next	= 1;
            	//out_tdata_next = {{64'h1c6f65ac1d4fcafe}, {64'hf00d000108004500}, {64'h003c7a2640004006}, {64'h023c8c7452bd8c74}};
-//		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450308004500}, {64'h003c7a2640004006}, {64'h023c8c7452bd8c74}};
-		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h003c7a2640004006}, {64'h02378c7452bd8c74}};
+    //		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450308004500}, {64'h003c7a2640004006}, {64'h023c8c7452bd8c74}};
+    		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h003c7a2640004006}, {64'h02378c7452bd8c74}};
 	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h04, 16'h4a}; 
-		out_tlast_next = 0;
-		out_tkeep_next  = 32'hffffffff;
-		state_next = SYN_GEN_2;
-	   end
-        end
-        SYN_GEN_2: begin
+    		out_tlast_next = 0;
+    		out_tkeep_next  = 32'hffffffff;
+    		state_next = SYN_GEN_2;
+	      end
+    end
+    SYN_GEN_2: begin
            if(out_tready) begin
 	      	out_tvalid_next	= 1;
            	out_tdata_next = {{64'h52b9e704138a0000}, {64'h000000000000a002}, {64'h3908ec7c00000204}, {64'h05b40402080a020e}};
 	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h04, 16'h4a}; 
-		out_tlast_next = 0;
-		out_tkeep_next  = 32'hffffffff;
-		state_next = SYN_GEN_3;
-	   end
-        end
-        SYN_GEN_3: begin
+		    out_tlast_next = 0;
+		    out_tkeep_next  = 32'hffffffff;
+		    state_next = SYN_GEN_3;
+	      end
+    end
+    SYN_GEN_3: begin
            if(out_tready) begin
 	      	out_tvalid_next	= 1;
            	out_tdata_next = {{64'h677f000000000103}, {64'h0307000000000000}, {64'h0}, {64'h0}};
 	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h04, 16'h4a}; 
-		out_tlast_next = 1;
-		out_tkeep_next  = 32'hffc00000;
-		counter_next    = 'b1;
-		state_next =  WAIT_PREPROCESS_RDY;
-		is_op_send_pkt = 1;
-                send_syn_over_next = 1'b1;
-		tcp_logon_handshake_trigger = 1;
+		    out_tlast_next = 1;
+		    out_tkeep_next  = 32'hffc00000;
+		    state_next =  WAIT_PREPROCESS_RDY;
+		    is_op_send_pkt = 1;
+            send_syn_over_next = 1'b1;
+		    tcp_logon_handshake_trigger = 1;
 	//	rd_preprocess_info = 1;
-	   end
-        end
-        ACK_GEN_1: begin
+	      end
+    end
+    ACK_GEN_1: begin
            if(out_tready && ack_rdy) begin
 //	     if(out_tready)begin
 	      	out_tvalid_next	= 1;
            	
 	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h04, 16'h42}; 
-		out_tlast_next = 0;
+	    	out_tlast_next = 0;
 
-                out_tdata_next = ack_tdata;
-                out_tkeep_next = ack_tkeep;
+            out_tdata_next = ack_tdata;
+            out_tkeep_next = ack_tkeep;
 
 /*
                 out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h003c7a2640004006}, {64'h02378c7452bd8c74}};
 		out_tkeep_next = 32'hffffffff;
 */
-		state_next = ACK_GEN_2;
-	   end
-        end
+    		state_next = ACK_GEN_2;
+	      end
+    end
 
-        ACK_GEN_2: begin
+    ACK_GEN_2: begin
            if(out_tready&& ack_rdy) begin
 //	     if(out_tready)begin
 	      	out_tvalid_next	= 1;
@@ -855,20 +755,19 @@ module op_lut_process_sm
            	out_tdata_next = {{64'h52b7e704138a0000}, {64'h000000000000a002}, {64'h3908ec8100000204}, {64'h05b40402080a020e}};
 */
 	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h04, 16'h42}; 
-		out_tlast_next = 0;
-//		out_tkeep_next  = 32'hffffffff;
+    		out_tlast_next = 0;
+    //		out_tkeep_next  = 32'hffffffff;
 
-                out_tdata_next[255:192] ={ ack_tdata[255:208],ack_value[31:16]};
-		out_tdata_next[191:128]= (is_tcp_fin) ? {ack_value[15:0], seq_value, {16'h8011}}: {ack_value[15:0], seq_value, {16'h8010}};
-//                out_tdata_next[191:128]=  {ack_value[15:0], seq_value, {16'h8010}};
-                out_tdata_next[127:64]  = ack_tdata[127:64];
-                out_tdata_next[63:0]    = {{16'h080a}, {ecr_value+1}, ts_value[31:16]};
-                out_tkeep_next = ack_tkeep;
-
-		state_next = ACK_GEN_3;
-	   end
-        end
-        ACK_GEN_3: begin
+            out_tdata_next[255:192] ={ ack_tdata[255:208],ack_value[31:16]};
+    		out_tdata_next[191:128]= (is_tcp_fin) ? {ack_value[15:0], seq_value, {16'h8011}}: {ack_value[15:0], seq_value, {16'h8010}};
+//          out_tdata_next[191:128]=  {ack_value[15:0], seq_value, {16'h8010}};
+            out_tdata_next[127:64]  = ack_tdata[127:64];
+            out_tdata_next[63:0]    = {{16'h080a}, {ecr_value+1}, ts_value[31:16]};
+            out_tkeep_next = ack_tkeep;
+		    state_next = ACK_GEN_3;
+	       end
+    end
+    ACK_GEN_3: begin
            if(out_tready && ack_rdy) begin
 //	     if(out_tready)begin
 /*
@@ -953,8 +852,7 @@ module op_lut_process_sm
                 state_next = WAIT_PREPROCESS_RDY;
 		
                 send_logon_over_next   = 'b1;
-                counter_next = 'b0;
-		is_op_send_pkt = 1;
+		        is_op_send_pkt = 1;
 		//send_pkt_counter_next=0;
            end
         end
@@ -1033,15 +931,14 @@ module op_lut_process_sm
 				   };
 
 //                out_tuser_next  = {64'h0,16'h27,16'h02,8'h01, 8'h01, 16'h9b};
-		out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0};
+		        out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0};
                 out_tlast_next = 1;
 //                out_tkeep_next  = 32'hffffffe0;
-		out_tkeep_next  =   32'hffffffff;
-                counter_next    = 'b1;
+		        out_tkeep_next  =   32'hffffffff;
                 state_next =  WAIT_PREPROCESS_RDY;
-		is_op_send_pkt = 1;
-		rd_preprocess_info = 1;
-		send_fix_testreq_hearb_next = 'b1;
+		        is_op_send_pkt = 1;
+		        rd_preprocess_info = 1;
+		        send_fix_testreq_hearb_next = 'b1;
 		//send_pkt_counter_next = 0;
            end
         end
@@ -1120,7 +1017,6 @@ module op_lut_process_sm
                 out_tuser_next  = {64'h0,16'h06,16'h02,8'h40, 8'h04, 16'h97};
                 out_tlast_next = 1;
                 out_tkeep_next  = 32'hfffffe00;
-                counter_next    = 'b1;
                 state_next =  WAIT_PREPROCESS_RDY;
                 is_op_send_pkt = 1;
 		send_fix_hearb_next = 'b1;
@@ -1192,7 +1088,6 @@ module op_lut_process_sm
                 state_next = WAIT_PREPROCESS_RDY;
 
                 send_fix_logout_next   = 'b1;
-                counter_for_shutdown_next ='b0 ;
                 is_op_send_pkt = 1;
 		is_send_logout_next = 1;
 		fix_logout_trigger = 1;
@@ -1338,7 +1233,6 @@ module op_lut_process_sm
                 out_tlast_next = 1;
 //                out_tkeep_next  = 32'hffffffe0;
                 out_tkeep_next  =   32'hffffffff;
-                counter_next    = 'b1;
                 state_next =  WAIT_PREPROCESS_RDY;
                 is_op_send_pkt = 1;
         //      rd_preprocess_info = 1;
@@ -1354,61 +1248,71 @@ module op_lut_process_sm
    always @(posedge clk) begin
       if(reset) begin
          state             <= WAIT_PREPROCESS_RDY;
-	 out_tvalid        <= 0;
+    	 out_tvalid        <= 0;
          out_tdata         <= 0;
          out_tuser         <= 0;
          out_keep	   <= 0;
          out_tlast	   <= 0;
          to_from_cpu       <= 0;
          dst_port          <= 'h0;
-	 counter 	   <= 1'b0;
-	 counter_for_shutdown <= 1'b0;
+    	 counter 	   <= 1'b0;
+    	 counter_for_shutdown <= 1'b0;
          send_syn_over     <= 'b0;
          send_logon_over   <= 'b0;
          send_ack_over     <= 'b0;
-	 send_fix_testreq_hearb <= 'b0;
-	 send_fix_logout   <= 'b0;
-	 send_fix_hearb	   <= 'b0;
+    	 send_fix_testreq_hearb <= 'b0;
+    	 send_fix_logout   <= 'b0;
+    	 send_fix_hearb	   <= 'b0;
          pkt_send_to_log   <= 'b0;
-//	 send_pkt_counter  <= 0;
+    //	 send_pkt_counter  <= 0;
          heartB_seq_num    <= 'h0;
-	 is_send_logout    <= 1'b0;
-	 osnt_test	   <= 0;
-	 pkt_sent_to_cpu_lpm_miss <= 0;
-	 fix_connect_start <= 0;
+    	 is_send_logout    <= 1'b0;
+    	 osnt_test	   <= 0;
+    	 pkt_sent_to_cpu_lpm_miss <= 0;
+    	 fix_connect_start <= 0;
+         rd_preprocess_done_sm <= 1;
       end
       else begin
-	 osnt_test 	   <= 1;
+    	 osnt_test 	   <= 1;
          state             <= state_next;
-	 out_tvalid	   <= out_tvalid_next;
+    	 out_tvalid	   <= out_tvalid_next;
          out_tlast         <= out_tlast_next;
          out_tdata	   <= out_tdata_next;
          out_tuser         <= out_tuser_next;
          out_keep         <= out_tkeep_next;
          to_from_cpu       <= to_from_cpu_next;
          dst_port          <= dst_port_next;
-	 counter	   <= cpu2ip_connect_signal_reg;
-	 counter_for_shutdown <= cpu2ip_shutdown_signal_reg;
+    	 counter	   <= cpu2ip_connect_signal_reg;
+    	 counter_for_shutdown <= cpu2ip_shutdown_signal_reg;
          pkt_send_to_log   <= pkt_send_to_log_next;
          send_syn_over     <= send_syn_over_next;
          send_logon_over   <= send_logon_over_next;
          send_ack_over     <= send_ack_over_next;
-	 send_fix_hearb    <= send_fix_hearb_next;
-	 send_fix_testreq_hearb<=send_fix_testreq_hearb_next;
-	 send_fix_logout   <= send_fix_logout_next;
-	 heartB_seq_num    <= heartB_seq_num_next;
-	 is_send_logout    <= is_send_logout_next;
-	 pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
-	 fix_connect_start  <= fix_connect_start_next;
-
+    	 send_fix_hearb    <= send_fix_hearb_next;
+    	 send_fix_testreq_hearb<=send_fix_testreq_hearb_next;
+    	 send_fix_logout   <= send_fix_logout_next;
+    	 heartB_seq_num    <= heartB_seq_num_next;
+    	 is_send_logout    <= is_send_logout_next;
+    	 pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
+    	 fix_connect_start  <= fix_connect_start_next;
+         rd_preprocess_done_sm <= rd_preprocess_done_sm_next;
       end // else: !if(reset)
    end // always @ (posedge clk)
 
    always @(posedge clk) begin
 	if(reset)begin
 		send_pkt_counter <= 0;
+        	//rd_preprocess_done <= 1 ;
 	end
 	else begin
+/*
+             if(rd_preprocess_done_sm)begin
+                rd_preprocess_done <= 1;
+             end
+             else begin
+                rd_preprocess_done <= 0;
+             end
+*/
 	         if(fix_connect_start)begin
 	                 if(is_send_pkt||fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
 	                       send_pkt_counter <= 0 ;

@@ -56,7 +56,7 @@
     );
 
 // --- flag
-     reg [7:0]			   counter;
+     reg [2:0]			   counter;
      reg			   tcp_pkt;
      reg			   fix_pkt;
 //     reg			   order_pkt;
@@ -86,6 +86,17 @@
      reg [7:0]			   resend_mux;
      reg 			   resend_cal_delay_one;
      reg			   resend_cal_delay_two;
+     reg			   resend_cal_delay_three;
+
+     reg [7:0]			   resend_begin_add_reg_one;
+     reg [7:0]			   resend_begin_add_reg_two;
+     reg [11:0]			   resend_begin_add_reg_three;
+     reg [11:0]			   resend_begin_add_reg_four;
+
+     reg [7:0]			   resend_end_add_reg_one;
+     reg [7:0]			   resend_end_add_reg_two;
+     reg [11:0]                    resend_end_add_reg_three;
+     reg [11:0]                    resend_end_add_reg_four;
 
 
 /*
@@ -127,7 +138,7 @@ fallthrough_small_fifo #(.WIDTH(10), .MAX_DEPTH_BITS(9))
 /* check flag */
 always @(posedge clk) begin
     if(reset) begin
-	counter <= 8'b0;
+	counter <= 3'b0;
 	tcp_pkt <= 1'b0;
 	fix_pkt <= 1'b0;
 	//order_pkt <= 1'b0;
@@ -148,7 +159,20 @@ always @(posedge clk) begin
 	resend_end_check_two<=1'b0;
         resend_non_dup <= 1'b1;
 	//fix_logout_trigger <=1'b0;
-	resend_mux <= 8'h0;	
+	resend_mux <= 8'h0;
+	resend_pkt_tdata <= 0;
+	resend_pkt_tdata_two <= 0;
+	resend_cal_delay_one<=0;
+	resend_cal_delay_two<=0;
+	resend_cal_delay_three<=0;	
+	resend_begin_add_reg_one <= 0;
+	resend_begin_add_reg_two <= 0;
+	resend_begin_add_reg_three<=0;
+	resend_begin_add_reg_four <= 0;
+	resend_end_add_reg_one <= 0;
+	resend_end_add_reg_two <= 0;
+	resend_end_add_reg_three <= 0;
+	resend_end_add_reg_four  <= 0;
     end
     else begin
 	if(valid) begin
@@ -159,7 +183,7 @@ always @(posedge clk) begin
 			tcp_pkt <= 1'b1;
 		end
 	end
-	if(counter == 8'd1 && valid) begin
+	if(counter == 8'd1 && tcp_pkt && valid) begin
 		//fix_pkt <= 1'b1;
 		//if(tdata[143:128] == 16'h8018 || tdata[143:128] == 16'h8019 ) begin
 		//if(tdata[223:208]==16'he704 && (tdata[143:128]==16'h8018||tdata[143:128]==16'h8019))begin //Dst port
@@ -167,7 +191,7 @@ always @(posedge clk) begin
 			fix_pkt <= 1'b1;
 		end
 	end
-        if(counter == 8'd2 && valid) begin
+        if(counter == 8'd2 && fix_pkt&&valid) begin
                 if(tdata[119:80] == 40'h33353d3001) begin 
                         heartbeat_pkt <= 1'b1;
                 end
@@ -201,7 +225,7 @@ always @(posedge clk) begin
 
         end
 
-	if(counter == 8'd4 && valid && fix_pkt && resend_pkt)begin
+	if(counter == 8'd4 && valid && resend_pkt)begin
 		//resend_non_dup <= 1'b1;
                 resend_pkt_tdata<= tdata;
         	if(tdata[167:152] == 16'h373d)begin
@@ -210,23 +234,31 @@ always @(posedge clk) begin
 				resend_mux   <= 1;
 			end
 			else if(tdata[135:128] == 8'h01) begin
-                                resend_begin <= {24'h0,tdata[147:144],tdata[139:136]};
+				resend_begin_add_reg_one <= {tdata[147:144],tdata[139:136]};
+                                resend_begin <= {24'h0,resend_begin_add_reg_one};
 				resend_mux   <= 2;
 			end
-			else if(tdata[127:120] == 8'h01 ) begin
-				resend_begin <= {20'h0,tdata[147:144],tdata[139:136],tdata[131:128]};
+			else if(tdata[127:120] == 8'h01 ) begin;
+				resend_begin_add_reg_one <= {tdata[139:136],tdata[131:128]};
+				resend_begin <= {20'h0,tdata[147:144],resend_begin_add_reg_one};
 				resend_mux   <= 3;
 			end
 			else if(tdata[119:112] == 8'h01 ) begin
-                                resend_begin <= {16'h0,tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120]};
+				resend_begin_add_reg_one <= {tdata[131:128],tdata[123:120]};
+				resend_begin_add_reg_two <= {tdata[147:144],tdata[139:136]};
+                                resend_begin <= {16'h0,resend_begin_add_reg_two,resend_begin_add_reg_one};
 				resend_mux   <= 4;
 			end
 			else if(tdata[111:104] == 8'h01 ) begin
-        	                resend_begin <= {12'h0,tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112]};
+				resend_begin_add_reg_two<= {tdata[123:120],tdata[115:112]};
+				resend_begin_add_reg_three<= {{tdata[147:144],tdata[139:136]},tdata[131:128]};
+        	                resend_begin <= {12'h0,resend_begin_add_reg_three,resend_begin_add_reg_two};
 				resend_mux   <= 5;
 			end
-			else if(tdata[103:96] == 8'h01 ) begin
-	                        resend_begin <= {8'h0, tdata[147:144],tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104]};
+			else begin //if(tdata[103:96] == 8'h01 ) begin
+				resend_begin_add_reg_three<={{tdata[123:120],tdata[115:112]},tdata[107:104]};
+				resend_begin_add_reg_four <={{tdata[147:144],tdata[139:136]},tdata[131:128]};
+	                        resend_begin <= {8'h0,resend_begin_add_reg_four ,resend_begin_add_reg_three};
 				resend_mux   <= 6;
 			end
 		end
@@ -236,22 +268,31 @@ always @(posedge clk) begin
 				resend_mux   <= 7;
 			end
 			else if(tdata[127:120]==8'h01)begin
-				resend_begin <= {24'h0, tdata[139:136],tdata[131:128]};
+				resend_begin_add_reg_one <= {tdata[139:136],tdata[131:128]};
+				resend_begin <= {24'h0, resend_begin_add_reg_one};
 				resend_mux   <= 8;
 			end
 			else if(tdata[119:112]==8'h01)begin
-				resend_begin <= {20'h0,tdata[139:136],tdata[131:128],tdata[123:120]};
+				resend_begin_add_reg_one <= {tdata[131:128],tdata[123:120]};
+				resend_begin <= {20'h0,tdata[139:136],resend_begin_add_reg_one};
 				resend_mux   <= 9;
 			end
 			else if(tdata[111:104]==8'h01)begin
-				resend_begin <= {16'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112]};
+				resend_begin_add_reg_one <= {tdata[123:120],tdata[115:112]};
+				resend_begin_add_reg_two <= {tdata[139:136],tdata[131:128]};
+				resend_begin <= {16'h0,resend_begin_add_reg_two,resend_begin_add_reg_one};
 				resend_mux   <= 10;
 			end
 			else if(tdata[103:96]==8'h01)begin
+/*
+				resend_begin_add_reg_two  <= {};
+				resend_begin_add_reg_three<= {};
+*/
 				resend_begin <= {12'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104]};
 				resend_mux   <= 11;
 			end
-			else if(tdata[95:88]==8'h01)begin
+			else begin//if(tdata[95:88]==8'h01)begin
+
 				resend_begin <= {8'h0,tdata[139:136],tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96]};
 				resend_mux   <= 12;
 			end
@@ -277,7 +318,7 @@ always @(posedge clk) begin
                                 resend_begin <= {12'h0,tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96]};
 				resend_mux   <= 17;
                         end
-                        else if(tdata[87:80]==8'h01)begin
+                        else begin//if(tdata[87:80]==8'h01)begin
                                 resend_begin <= {8'h0,tdata[131:128],tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88]};
 				resend_mux   <= 18;
                         end
@@ -303,13 +344,13 @@ always @(posedge clk) begin
                                 resend_begin <= {12'h0,tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88]};
 				resend_mux   <= 23;
                         end
-                        else if(tdata[79:72]==8'h01)begin
+                        else begin//if(tdata[79:72]==8'h01)begin
                                 resend_begin <= {8'h0,tdata[123:120],tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
 				resend_mux   <= 24;
                         end
 
 		end
-		else if(tdata[135:120] == 16'h373d)begin
+		else begin//if(tdata[135:120] == 16'h373d)begin
                         if(tdata[111:104]==8'h01)begin
                                 resend_begin <= {28'h0, tdata[115:112]};
 				resend_mux   <= 25;
@@ -330,13 +371,425 @@ always @(posedge clk) begin
                                 resend_begin <= {12'h0,tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80]};
 				resend_mux   <= 29;
                         end
-                        else if(tdata[71:64]==8'h01)begin
+                        else begin//if(tdata[71:64]==8'h01)begin
                                 resend_begin <= {8'h0,tdata[115:112],tdata[107:104],tdata[99:96],tdata[91:88],tdata[83:80],tdata[75:72]};
 				resend_mux   <= 30;
                         end
 
 		end
 	end
+/*
+	if(counter == 8'd5 && valid  && resend_pkt)begin
+		//resend_pkt_tdata_two<= tdata;
+		case(resend_mux)
+			//--167:152
+			8'd1 : begin
+				if(resend_pkt_tdata[103:96]==8'h01)begin
+					resend_end <= {28'h0,resend_pkt_tdata[107:104]}; 
+				end
+				else if(resend_pkt_tdata[95:88]==8'h01)begin
+					resend_end <= {24'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
+				end
+				else if(resend_pkt_tdata[87:80]==8'h01)begin
+					resend_end <= {20'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+				end
+				else if(resend_pkt_tdata[79:72]==8'h01)begin
+					resend_end <= {16'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+				end
+				else if(resend_pkt_tdata[71:64]==8'h01)begin
+					resend_end <= {12'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+				end
+				else if(resend_pkt_tdata[63:56]==8'h01)begin
+					resend_end <= {8'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+				end
+			end
+			8'd2 : begin
+                                if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+                                end
+                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+			end
+			8'd3 : begin
+                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+			end
+			8'd4 : begin
+                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+			end
+			8'd5 : begin
+                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+
+			end
+                        8'd6 : begin
+				if(resend_pkt_tdata[23:16]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+				end
+                        end
+			//159:144
+                        8'd7 : begin
+                                if(resend_pkt_tdata[95:88]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[99:96]};
+                                end
+                                else if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+                                end
+                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                        end
+                        8'd8 : begin
+                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                        end
+                        8'd9 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                        end
+                        8'd10 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd11 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+			8'd12 : begin
+				if(resend_pkt_tdata[15:8]==8'h01)begin 
+					resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+				end
+			end
+                        8'd13 : begin
+                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                        end
+                        8'd14 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd15 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+*/
+/*
+		endcase
+		resend_cal_delay_one<= 1;
+	end
+	if(resend_cal_delay_one)begin
+	    if(resend_mux[7:4]!=4'b0)begin
+		case(resend_mux)
+*/
+/*
+                        8'd16 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                        end
+                        8'd17 : begin
+                                if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                        end
+                        8'd18 : begin
+				if(resend_pkt_tdata[7:0]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+				end
+                        end
+                        8'd19 : begin
+                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd20 : begin
+                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+
+                        end
+                        8'd21 : begin
+                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+
+                        end
+                        8'd22 : begin
+                                if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+
+                        end
+                        8'd23 : begin
+                                if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+				else if(tdata[255:248]==8'h01) begin
+					resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+				end
+                        end
+                        8'd24 : begin
+				if(tdata[247:240]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],tdata[251:248]};
+				end
+                        end
+                        8'd25 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+                        8'd26 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+      
+
+                        end
+                        8'd27 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+
+                        end
+                        8'd28 : begin
+                                if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                                else if(tdata[255:248]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+                                end
+                           
+                        end
+                        8'd29 : begin
+                                if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+				else if(tdata[247:240]==8'h01)begin
+					resend_end <= {8'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],tdata[251:248]};
+				end
+
+                        end
+                        8'd30 : begin
+				if(tdata[239:232]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],tdata[251:248],tdata[243:240]};
+				end
+                        end
+
+		endcase
+		resend_cal_delay_two<= 1 ;
+*/
+	   //end
+/*
+	   else begin	
+		resend_cal_delay_two<= 1;
+	   end		
+*/
+//	end
+
 /*
 	if(counter == 8'd4 && valid && fix_pkt && resend_pkt)begin
 		//resend_non_dup <= 1'b1;
@@ -1049,7 +1502,8 @@ always @(posedge clk) begin
 	end
 
 */
-       if(tlast && valid) begin
+
+       if(tlast && valid ) begin
 		check_done <= 1'b1;
 		end_state  <= 1'b1;
        end 
@@ -1065,7 +1519,7 @@ always @(posedge clk) begin
 		order_pkt  <= 1'b0;
 		session_reject_pkt <= 1'b0;
 		order_cancel_reject_pkt <= 1'b0;
-                counter    <= 8'b0;
+                counter    <= 3'b0;
 		resend_end_check_one <=1'b0;
 		resend_end_check_two <=1'b0;
 		//fix_logout_signal<=1'b0;
@@ -1073,6 +1527,19 @@ always @(posedge clk) begin
 		resend_non_dup <= 1'b0;
                 end_state        <= 1'b0;
 		resend_mux    <= 0;
+		resend_pkt_tdata <= 0;
+		resend_pkt_tdata_two<=0;
+		resend_cal_delay_one<=0;
+		resend_cal_delay_two<=0;
+		resend_cal_delay_three<=0;
+		resend_begin_add_reg_one <= 0;
+		resend_begin_add_reg_two <= 0;
+		resend_begin_add_reg_three <= 0;
+		resend_begin_add_reg_four<=0;
+		resend_end_add_reg_one<=0;
+		resend_end_add_reg_two<=0;
+		resend_end_add_reg_three<=0;
+		resend_end_add_reg_four<=0;
         end
 
 
@@ -1080,7 +1547,413 @@ always @(posedge clk) begin
 
     end
 end
+/*
 
+always @(*)begin
+	if(resend_cal_delay_two)begin
+		if(resend_end==32'b0)begin
+			
+		end
+	end
+end
+
+
+*/
+always @(posedge clk)begin
+	if({counter,resend_pkt}==4'b1011)begin
+		case(resend_mux)
+			//--167:152
+			8'd1 : begin
+				if(resend_pkt_tdata[103:96]==8'h01)begin
+					resend_end <= {28'h0,resend_pkt_tdata[107:104]}; 
+				end
+				else if(resend_pkt_tdata[95:88]==8'h01)begin
+					resend_end <= {24'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96]};
+				end
+				else if(resend_pkt_tdata[87:80]==8'h01)begin
+					resend_end <= {20'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+				end
+				else if(resend_pkt_tdata[79:72]==8'h01)begin
+					resend_end <= {16'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+				end
+				else if(resend_pkt_tdata[71:64]==8'h01)begin
+					resend_end <= {12'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+				end
+				else if(resend_pkt_tdata[63:56]==8'h01)begin
+					resend_end <= {8'h0,resend_pkt_tdata[107:104],resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+				end
+			end
+			8'd2 : begin
+                                if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+                                end
+                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+			end
+			8'd3 : begin
+                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+			end
+			8'd4 : begin
+                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+			end
+			8'd5 : begin
+                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+
+			end
+                        8'd6 : begin
+				if(resend_pkt_tdata[23:16]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+				end
+                        end
+			//159:144
+                        8'd7 : begin
+                                if(resend_pkt_tdata[95:88]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[99:96]};
+                                end
+                                else if(resend_pkt_tdata[87:80]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88]};
+                                end
+                                else if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[99:96],resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                        end
+                        8'd8 : begin
+                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[91:88],resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                        end
+                        8'd9 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                        end
+                        8'd10 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd11 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+			8'd12 : begin
+				if(resend_pkt_tdata[15:8]==8'h01)begin 
+					resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+				end
+			end
+                        8'd13 : begin
+                                if(resend_pkt_tdata[79:72]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[83:80]};
+                                end
+                                else if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[83:80],resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                        end
+                        8'd14 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd15 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+                        8'd16 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                        end
+                        8'd17 : begin
+                                if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                        end
+                        8'd18 : begin
+				if(resend_pkt_tdata[7:0]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+				end
+                        end
+                        8'd19 : begin
+                                if(resend_pkt_tdata[71:64]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[75:72]};
+                                end
+                                else if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[75:72],resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                        end
+                        8'd20 : begin
+                                if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+
+                        end
+                        8'd21 : begin
+                                if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+
+                        end
+                        8'd22 : begin
+                                if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+
+                        end
+                        8'd23 : begin
+                                if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+				else if(tdata[255:248]==8'h01) begin
+					resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+				end
+                        end
+                        8'd24 : begin
+				if(tdata[247:240]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],tdata[251:248]};
+				end
+                        end
+                        8'd25 : begin
+                                if(resend_pkt_tdata[63:56]==8'h01)begin //resend_end
+                                        resend_end <= {28'h0,resend_pkt_tdata[67:64]};
+                                end
+                                else if(resend_pkt_tdata[55:48]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56]};
+                                end
+                                else if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[67:64],resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                        end
+                        8'd26 : begin
+                                if(resend_pkt_tdata[47:40]==8'h01)begin //resend_end
+                                        resend_end <= {24'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48]};
+                                end
+                                else if(resend_pkt_tdata[39:32]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40]};
+                                end
+                                else if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[59:56],resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+      
+
+                        end
+                        8'd27 : begin
+                                if(resend_pkt_tdata[31:24]==8'h01)begin //resend_end
+                                        resend_end <= {20'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32]};
+                                end
+                                else if(resend_pkt_tdata[23:16]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24]};
+                                end
+                                else if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {8'h0,resend_pkt_tdata[51:48],resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+
+                        end
+                        8'd28 : begin
+                                if(resend_pkt_tdata[15:8]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16]};
+                                end
+                                else if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {12'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+                                else if(tdata[255:248]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[43:40],resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0]};
+                                end
+                           
+                        end
+                        8'd29 : begin
+                                if(resend_pkt_tdata[7:0]==8'h01)begin //resend_end
+                                        resend_end <= {16'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8]};
+                                end
+				else if(tdata[247:240]==8'h01)begin
+					resend_end <= {8'h0,resend_pkt_tdata[35:32],resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],tdata[251:248]};
+				end
+
+                        end
+                        8'd30 : begin
+				if(tdata[239:232]==8'h01)begin
+                                        resend_end <= {8'h0,resend_pkt_tdata[27:24],resend_pkt_tdata[19:16],resend_pkt_tdata[11:8],resend_pkt_tdata[3:0],tdata[251:248],tdata[243:240]};
+				end
+                        end
+
+		endcase
+		resend_cal_delay_two <= 1 ;	   
+	end
+
+end
 
 /*
 

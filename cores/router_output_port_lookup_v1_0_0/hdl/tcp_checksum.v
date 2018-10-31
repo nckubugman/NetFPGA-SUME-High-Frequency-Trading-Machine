@@ -24,19 +24,13 @@ module tcp_checksum
 
    //--- interface to preprocess
    input                              word_IP_DST_HI,
-   input                              word_IP_DST_LO,
-   input                              word_OPT_PAYLOAD,
-   
+   input                              word_IP_DST_LO, 
  
    // --- interface to process
    output                             tcp_checksum_vld,
-//   output                             tcp_checksum_is_good,
    output     [15:0]                  tcp_new_checksum,     // new checksum assuming decremented TTL
    input                              rd_tcp_checksum,
-   //output 			                   rd_fix_for_tcp, 
-   //input   [63:0]	                 fix_new_checksum_for_tcp,         
-   //input   	  		                 is_fix_out_for_tcp,
-   
+ 
    // misc
    input reset,
    input clk

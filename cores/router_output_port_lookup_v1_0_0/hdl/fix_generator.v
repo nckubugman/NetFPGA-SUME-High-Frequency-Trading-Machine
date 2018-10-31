@@ -121,7 +121,6 @@ module fix_generator
     input [31:0]			ecr_val,
 
     output				is_send_pkt,
-    output				send_one,
     input				rd_preprocess_done,
 //    output[216:0]                         order_index_out,    
     output[240:0]			order_index_out,
@@ -541,18 +540,16 @@ module fix_generator
 
     tcp_checksum
     #(
-        .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
-        .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH)
+        .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH)
      )
         tcp_checksum(
                 .tdata(ip_tcp_out_tdata_buf),
                 .tkeep(ip_tcp_out_tkeep_buf),
                 .valid(ip_tcp_out_tvalid_buf),
                 .tlast(ip_tcp_out_tlast_buf),
-                .tuser(ip_tcp_out_tuser_buf),
+                //.tuser(ip_tcp_out_tuser_buf),
                 .word_IP_DST_LO(ip_tcp_out_word_IP_DST_LO),
                 .word_IP_DST_HI(ip_tcp_out_word_IP_DST_HI),
-                .word_OPT_PAYLOAD(ip_tcp_out_word_OPT_PAYLOAD),
                 .rd_tcp_checksum(rd_ip_tcp),
                 .tcp_new_checksum(tcp_new_checksum),
                 .tcp_checksum_vld(tcp_checksum_vld),
@@ -909,7 +906,6 @@ module fix_generator
          .parse_order_vld			(parse_order_vld),
 	 .order_index_out			(order_index_out),
 	 .rd_preprocess_info		(rd_preprocess_info),
-	 .send_one			(send_one),
 	 .is_send_pkt			(is_send_pkt),
 	 .rd_preprocess_done		(rd_preprocess_done),
 
