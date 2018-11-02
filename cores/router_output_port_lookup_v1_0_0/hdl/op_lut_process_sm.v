@@ -433,7 +433,7 @@ module op_lut_process_sm
       is_order_pkt		 =0;
       is_connect_pkt		 = 0;
       //rd_preprocess_done_sm_next = 0;
-      rd_preprocess_done 	=0;
+      //rd_preprocess_done 	=0;
       case(state)
         WAIT_PREPROCESS_RDY: begin
 
@@ -463,7 +463,20 @@ module op_lut_process_sm
 			pkt_sent_to_cpu_bad_ttl   = 1;
                  	rd_preprocess_info          = 1;
 		       	dst_port_next               = output_port;
-	      end 
+	      end
+              else if(is_tcp_hand_shake ||   is_logon || is_heartbeat) begin
+              //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
+                     //pkt_sent_to_cpu_options_ver   = 1;
+                     to_from_cpu_next   = 0;
+                     dst_port_next      = output_port;
+                     state_next         = ACK_GEN_1;
+                     //state_next       = SEND_PKT ;
+                     pkt_forwarded      = 1;
+                     //pkt_sent_to_cpu_arp_miss = 1 ;
+                     fix_connect_start_next  = 1 ;
+                     send_ack_sig       = 1'b1;
+              end
+ 
 	      else if(is_ip_pkt && is_fix_order)begin
 			state_next = SEND_PKT;
 			rd_preprocess_info = 1;
@@ -471,20 +484,6 @@ module op_lut_process_sm
 			dst_port_next = 'h10;
 			//dst_port_next = output_port ;
 	      end
-              //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_logon) || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
-              //else if(is_ip_pkt && (is_tcp_hand_shake ||  (is_fix && is_logon) || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
-              else if(is_tcp_hand_shake ||   is_logon || is_heartbeat) begin
-              //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
-                     //pkt_sent_to_cpu_options_ver   = 1;
-                     to_from_cpu_next   = 0;
-                     dst_port_next      = output_port;
-                     state_next         = ACK_GEN_1;
-		     //state_next 	= SEND_PKT ;
-                     pkt_forwarded      = 1;
-		     //pkt_sent_to_cpu_arp_miss = 1 ;
-		     fix_connect_start_next  = 1 ; 
-                     send_ack_sig       = 1'b1;
-              end
               else if(is_testReq) begin
             //  else if(is_ip_pkt && is_fix&& is_testReq)begin
                  //else if(is_ip_pkt && ip_checksum_is_good && (is_fix && is_logon))begin
