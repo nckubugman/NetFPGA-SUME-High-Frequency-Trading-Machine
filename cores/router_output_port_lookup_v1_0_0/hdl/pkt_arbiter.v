@@ -168,6 +168,7 @@ assign in_fifo_rd_en	  = !connect_pkt_out_fifo_nearly_full;
                 fix_seq_num_in_tvalid_next = 0;
                 fix_order_cancel_rd_en = 0;
                 connect_pkt_rd_en      = 0;
+/*
 		if(!connect_pkt_out_fifo_empty&&fix_seq_num_in_tready)begin
                         state_next = PASS_TCP_FIX_CONNECT;
                 end
@@ -177,8 +178,8 @@ assign in_fifo_rd_en	  = !connect_pkt_out_fifo_nearly_full;
                 else begin
                         state_next = WAIT_PREPROCESS_RDY;
                 end
+*/
 
-/*
                 if(!fix_order_cancel_out_fifo_empty&&fix_seq_num_in_tready)begin
                         state_next = PASS_ORDER_CANCEL;
                 end
@@ -188,7 +189,7 @@ assign in_fifo_rd_en	  = !connect_pkt_out_fifo_nearly_full;
                 else begin
                         state_next = WAIT_PREPROCESS_RDY;
                 end
-*/ 
+ 
         end
 
 

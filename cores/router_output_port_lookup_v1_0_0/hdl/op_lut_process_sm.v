@@ -320,7 +320,8 @@ module op_lut_process_sm
    reg			 send_fix_hearb_next;
    reg			 send_fix_hearb;   
 
-
+   reg			 recv_fix_report;
+   reg			 recv_fix_report_next;
    //  Keep connect  Alive
 
    reg[31:0] 			 send_pkt_counter_next;
@@ -341,7 +342,9 @@ module op_lut_process_sm
    wire			fix_logon_sended;
    wire			fix_heartb_sended;
    wire			fix_testReq_hearb_sended;
-   
+
+   wire			fix_report_recieved;  
+ 
    reg          rd_preprocess_done_sm ;
    reg          rd_preprocess_done_sm_next;
    reg		rd_preprocess_done_next ;
@@ -362,6 +365,8 @@ module op_lut_process_sm
    assign fix_logon_sended  = send_logon_over;
    assign fix_heartb_sended = send_fix_hearb;
    assign fix_testReq_hearb_sended = send_fix_testreq_hearb;
+   assign fix_report_recieved = recv_fix_report;
+
 
    assign is_syn_ack = is_ip_pkt   && is_tcp_hand_shake;
    assign is_fix_logon = is_ip_pkt && is_fix && is_logon;
@@ -427,7 +432,7 @@ module op_lut_process_sm
       send_fix_hearb_next		    = 'b0;
       send_fix_testreq_hearb_next	    = 'b0;
       send_fix_logout_next		    = 'b0;
-
+      recv_fix_report_next		    = 'b0;
       is_op_send_pkt   		   = 0;    
       heartB_seq_num_next         =0;
       is_send_logout_next 	  = is_send_logout;
@@ -455,9 +460,21 @@ module op_lut_process_sm
                * We just pipe it to the output */
 	            is_op_send_pkt =  1 ;
               /* check that the port on which it was received matches its mac */
+              if(is_tcp_hand_shake ||   is_logon || is_heartbeat) begin
+              //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
+                     //pkt_sent_to_cpu_options_ver   = 1;
+                     to_from_cpu_next   = 0;
+                     dst_port_next      = output_port;
+                     state_next         = ACK_GEN_1;
+                     //state_next       = SEND_PKT ;
+                     pkt_forwarded      = 1;
+                     //pkt_sent_to_cpu_arp_miss = 1 ;
+                     fix_connect_start_next  = 1 ;
+                     send_ack_sig       = 1'b1;
+              end
               //else if(is_for_us && (input_port_num==mac_dst_port_num || is_broadcast)) begin
               //if((is_for_us) && (input_port_num==mac_dst_port_num || is_broadcast)) begin
-              if(ip_checksum_is_good && is_ip_feed && is_udp_pkt && udp_checksum_is_good ) begin
+              else if(ip_checksum_is_good && is_ip_feed && is_udp_pkt && udp_checksum_is_good ) begin
                  	state_next                  = SEND_PKT;
 			//pkt_forwarded		    = 1;
 			//dst_port_next		    = 'h01;
@@ -465,6 +482,7 @@ module op_lut_process_sm
                  	rd_preprocess_info          = 1;
 		       	dst_port_next               = output_port;
 	      end
+/*
               else if(is_tcp_hand_shake ||   is_logon || is_heartbeat) begin
               //else if(is_ip_pkt && (is_tcp_hand_shake || is_tcp_fin || (is_fix && is_heartbeat)||(is_fix && is_testReq))) begin
                      //pkt_sent_to_cpu_options_ver   = 1;
@@ -477,7 +495,7 @@ module op_lut_process_sm
                      fix_connect_start_next  = 1 ;
                      send_ack_sig       = 1'b1;
               end
- 
+ */
 	      else if(is_ip_pkt && is_fix_order)begin
 			state_next = SEND_PKT;
 			rd_preprocess_info = 1;
@@ -499,6 +517,7 @@ module op_lut_process_sm
 			state_next = SEND_REPORT_PKT;
 			rd_preprocess_done_next= 0;
                      	//pkt_sent_to_cpu_bad_ttl = 1 ;
+			recv_fix_report_next = 1;
                      	dst_port_next = 'h10;
               end
 
@@ -515,7 +534,8 @@ module op_lut_process_sm
 		     end
 		     else begin
 			  state_next = WAIT_PREPROCESS_RDY ;
-			  fix_logout_trigger = 1;	
+			  fix_logout_trigger = 1;
+			  fix_connect_start_next = 0;	
 		     end
                     
               end
@@ -558,20 +578,28 @@ module op_lut_process_sm
                 pkt_forwarded               = 1;
                 state_next = LOGOUT_GEN_1;
         end
+/*
 	else if(is_send_pkt)begin
 		rd_preprocess_done_next = 0;
 		pkt_sent_to_cpu_bad_ttl = 1;
 		state_next = WAIT_PREPROCESS_RDY;
 	end
+*/
 	//else if(send_pkt_counter == 32'h5F5E1000) begin //160000000
 	else if(send_pkt_counter == 32'hFFFFFFFF) begin
 		state_next = HEARTBEAT_GEN_1;
 	end
+/*
 	else begin
 		state_next = WAIT_PREPROCESS_RDY ;
-		//rd_preprocess_done_next = 1;
+		if(is_send_pkt)begin
+			rd_preprocess_done_next = 0;
+		end
+		else begin
+			rd_preprocess_done_next = 1;
+		end
 	end
-		
+*/		
   end // case: WAIT_PREPROCESS_RDY
 /*
 	WAIT_REQUEST: begin
@@ -1086,6 +1114,7 @@ module op_lut_process_sm
 		is_send_logout_next = 1;
 		fix_logout_trigger = 1;
 		//send_pkt_counter_next = 0;
+		fix_connect_start_next = 0;
            end
         end
 
@@ -1265,7 +1294,7 @@ module op_lut_process_sm
     	 pkt_sent_to_cpu_lpm_miss <= 0;
     	 fix_connect_start <= 0;
          rd_preprocess_done_sm <= 1;
-	 rd_preprocess_done <= 1;
+	 //rd_preprocess_done <= 1;
       end
       else begin
     	 osnt_test 	   <= 1;
@@ -1291,14 +1320,14 @@ module op_lut_process_sm
     	 pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
     	 fix_connect_start  <= fix_connect_start_next;
          rd_preprocess_done_sm <= rd_preprocess_done_sm_next;
-	 rd_preprocess_done  <= rd_preprocess_done_next;
+	 //rd_preprocess_done  <= rd_preprocess_done_next;
       end // else: !if(reset)
    end // always @ (posedge clk)
 
    always @(posedge clk) begin
 	if(reset)begin
 		send_pkt_counter <= 0;
-        	//rd_preprocess_done <= 1 ;
+        	rd_preprocess_done <= 1 ;
 	end
 	else begin
 /*
@@ -1309,14 +1338,26 @@ module op_lut_process_sm
                 rd_preprocess_done <= 0;
              end
 */
+		 rd_preprocess_done <= rd_preprocess_done_next;
 	         if(fix_connect_start)begin
-	                 if(is_send_pkt||fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
+	                 if(fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
 	                       send_pkt_counter <= 0 ;
 	                 end
+			 else if(is_send_pkt)begin
+				rd_preprocess_done <= 0;
+			 end
+			 else if(fix_report_recieved)begin
+				rd_preprocess_done <= 0;
+			 end
 	                 else begin
+			       rd_preprocess_done <= 1;
 	                       send_pkt_counter <= send_pkt_counter + 1;
 	                 end
 	         end
+		 else begin
+			 send_pkt_counter <= 0 ;
+			 rd_preprocess_done <= 1;
+		 end
 
 	end	
    end

@@ -188,7 +188,8 @@ module fix_formatter
 		is_send_pkt = 0;
 	  end
 */
-          if(parse_order_vld && out_tready && rd_preprocess_done) begin
+         // if(parse_order_vld && out_tready&&rd_preprocess_done) begin
+	 if(parse_order_vld && out_tready&&rd_preprocess_done)begin
                 if(order_index_out[0] == 1'b1) begin
 	             //if(rd_preprocess_done)begin
 	                   state_next = HEADER_0;
@@ -342,7 +343,7 @@ module fix_formatter
 			//state_next      = PAYLOAD_6;
 			//state_next      = WAIT_PREPROCESS_RDY;
 			state_next = WAIT_PREPROCESS_RDY ;
-			is_send_pkt_next = 0;
+			//is_send_pkt_next = 0;
 		end
 	end
 	PAYLOAD_6: begin
