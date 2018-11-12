@@ -410,7 +410,7 @@
 			order_in[15:0] <= {tdata[159:152], tdata[95:88]};	
 		end
 		if(tlast && valid) begin
-			in_fifo_wr_order <=(tuser[23:16] == 8'h80)? 1'b1: 1'b0;
+			in_fifo_wr_order <=(tuser[23:16] == 8'h04)? 1'b1: 1'b0;
 			counter	   <= 8'b0;
 		end
 		else begin

@@ -301,23 +301,23 @@ preprocess_control
 		   out_tvalid_next = 1'b0;   
 		   out_stock_id_tvalid_next = 1'b0;
 	
-		   //src port = mac0
+		   //src port = mac0 output port = nf0
 		   if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h01)begin 
 			//state_next = PASS_STOCK_ID_PKT;
 			state_next = PASS_UDP_FORMAT_6_PKT;
 		   end
-		   //src port = mac1
-		   else if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h04)begin
+		   //src port = nf1  output port = mac3
+		   else if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h08)begin
 			state_next = PASS_CONNECT_PKT;
 		   end	 
-		   //src port = nf3
-		   else if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h80)begin
+		   //src port = mac1 or nf3 output port = nf0
+		   else if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h04)begin
 			state_next = PASS_STOCK_ID_PKT;
 	           end
-		   //src port = mac3
-                   else if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h40)begin
-                        state_next = PASS_REPORT_PKT;
-                   end
+		   //src port = mac3 output port = mac 2
+            else if(!in_fifo_empty && in_fifo_out_tuser[23:16]==8'h40)begin
+                state_next = PASS_REPORT_PKT;
+            end
 		   else begin
 			state_next = WAIT_PREPROCESS_RDY;
 		   end	   
