@@ -264,6 +264,7 @@ module op_lut_process_sm
    localparam SEND_REPORT_PKT = 13128;
 
 
+
    localparam C_AXIS_SRC_PORT_POS = 16;
    localparam C_AXIS_DST_PORT_POS = 24;
    //---------------------- Wires and regs -------------------------
@@ -667,11 +668,13 @@ module op_lut_process_sm
                         state_next = LOGON_GEN_1;
                         is_send_logout_next = 1'b0;
                  end
+/*
   	    	 else if(is_report)begin
 		    	 //rd_preprocess_done_sm_next = 1;
 			 rd_preprocess_done_next = 1;
 			 state_next = WAIT_PREPROCESS_RDY;
 		 end
+*/
 /*
                  else if(is_testReq)begin
                         state_next = TEST_REQ_HEARTBEAT_GEN_1;
@@ -807,13 +810,12 @@ module op_lut_process_sm
 		is_op_send_pkt  =  1;
 	//	rd_preprocess_info = 1;
 		send_ack_over_next = 1;
-/*
+
 		if(is_report)begin
 			rd_preprocess_info = 1;
-			state_next = SEND_PKT;			
-			rd_preprocess_done = 1;
+			state_next = WAIT_PREPROCESS_RDY;			
 		end
-*/
+
 	   end
         end
 
@@ -1114,6 +1116,7 @@ module op_lut_process_sm
 		is_send_logout_next = 1;
 		fix_logout_trigger = 1;
 		//send_pkt_counter_next = 0;
+		rd_preprocess_info = 1;
 		fix_connect_start_next = 0;
            end
         end
@@ -1295,6 +1298,7 @@ module op_lut_process_sm
     	 fix_connect_start <= 0;
          rd_preprocess_done_sm <= 1;
 	 //rd_preprocess_done <= 1;
+	 recv_fix_report <= 0;
       end
       else begin
     	 osnt_test 	   <= 1;
@@ -1321,6 +1325,7 @@ module op_lut_process_sm
     	 fix_connect_start  <= fix_connect_start_next;
          rd_preprocess_done_sm <= rd_preprocess_done_sm_next;
 	 //rd_preprocess_done  <= rd_preprocess_done_next;
+	 recv_fix_report    <= recv_fix_report_next;
       end // else: !if(reset)
    end // always @ (posedge clk)
 
@@ -1338,19 +1343,19 @@ module op_lut_process_sm
                 rd_preprocess_done <= 0;
              end
 */
-		 rd_preprocess_done <= rd_preprocess_done_next;
+//		 rd_preprocess_done <= rd_preprocess_done_next;
 	         if(fix_connect_start)begin
 	                 if(fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
 	                       send_pkt_counter <= 0 ;
 	                 end
 			 else if(is_send_pkt)begin
 				rd_preprocess_done <= 0;
+				send_pkt_counter <= 0;
 			 end
 			 else if(fix_report_recieved)begin
-				rd_preprocess_done <= 0;
+				rd_preprocess_done <= 1;
 			 end
 	                 else begin
-			       rd_preprocess_done <= 1;
 	                       send_pkt_counter <= send_pkt_counter + 1;
 	                 end
 	         end
