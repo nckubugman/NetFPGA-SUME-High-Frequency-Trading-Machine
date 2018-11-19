@@ -132,6 +132,7 @@
      reg			    resend_mode_two_reg;
      reg			    resend_mode_three_reg;
 
+     reg			    resend_num_wr;
 /*
      reg [7:0]			   resend_end_add_reg_one;
      reg [7:0]			   resend_end_add_reg_two;
@@ -232,6 +233,7 @@ always @(posedge clk) begin
 
 	resend_mode_one_reg    <= 0;
 	resend_mode_two_reg    <= 0;
+	resend_num_wr	       <= 0;
 //	resend_mode_three_reg  <= 0;
 
 /*
@@ -984,9 +986,23 @@ always @(posedge clk) begin
 
 	     endcase
 	     resend_cal_delay_two<= 1 ;
+	     resend_num_wr <= 1;
 	end
-
+	if(resend_num_wr)begin
+                resend_begin_fix_seq_num <= resend_begin ;
+                resend_end_fix_seq_num   <= resend_end;
+                resend_mode_two          <= resend_mode_two_reg;
+                if(resend_end==0&&resend_mode_one_reg)begin
+                        resend_mode_three <=resend_mode_one_reg;
+                        resend_mode_one   <= 0;
+                end
+                else begin
+                        resend_mode_one  <= resend_mode_one_reg;
+                        resend_mode_three <= 0;
+                end
+	end
        if(tlast && valid ) begin
+/*
                 resend_begin_fix_seq_num <= resend_begin ;
                 resend_end_fix_seq_num   <= resend_end;
 		resend_mode_two 	 <= resend_mode_two_reg;
@@ -998,6 +1014,7 @@ always @(posedge clk) begin
 			resend_mode_one  <= resend_mode_one_reg;
 			resend_mode_three <= 0;
 		end
+*/
 		check_done <= 1'b1;
 		end_state  <= 1'b1;
        end 
@@ -1066,6 +1083,7 @@ always @(posedge clk) begin
 	
 		resend_mode_one_reg    <= 0;
 		resend_mode_two_reg    <= 0;		
+		resend_num_wr 	       <= 0;
 /*
 		resend_end_add_reg_one<=0;
 		resend_end_add_reg_two<=0;

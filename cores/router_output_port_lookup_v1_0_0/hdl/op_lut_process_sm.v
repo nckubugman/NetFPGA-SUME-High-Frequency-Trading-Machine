@@ -345,7 +345,8 @@ module op_lut_process_sm
    wire			fix_testReq_hearb_sended;
 
    wire			fix_report_recieved;  
- 
+   wire			fix_server_connected; 
+
    reg          rd_preprocess_done_sm ;
    reg          rd_preprocess_done_sm_next;
    reg		rd_preprocess_done_next ;
@@ -367,7 +368,7 @@ module op_lut_process_sm
    assign fix_heartb_sended = send_fix_hearb;
    assign fix_testReq_hearb_sended = send_fix_testreq_hearb;
    assign fix_report_recieved = recv_fix_report;
-
+   assign fix_server_connected = fix_connect_start;
 
    assign is_syn_ack = is_ip_pkt   && is_tcp_hand_shake;
    assign is_fix_logon = is_ip_pkt && is_fix && is_logon;
@@ -470,7 +471,7 @@ module op_lut_process_sm
                      //state_next       = SEND_PKT ;
                      pkt_forwarded      = 1;
                      //pkt_sent_to_cpu_arp_miss = 1 ;
-                     fix_connect_start_next  = 1 ;
+                     //fix_connect_start_next  = 1 ;
                      send_ack_sig       = 1'b1;
               end
               //else if(is_for_us && (input_port_num==mac_dst_port_num || is_broadcast)) begin
@@ -535,8 +536,8 @@ module op_lut_process_sm
 		     end
 		     else begin
 			  state_next = WAIT_PREPROCESS_RDY ;
-			  fix_logout_trigger = 1;
-			  fix_connect_start_next = 0;	
+			  //fix_logout_trigger = 1;
+			  //fix_connect_start_next = 0;	
 		     end
                     
               end
@@ -586,8 +587,8 @@ module op_lut_process_sm
 		state_next = WAIT_PREPROCESS_RDY;
 	end
 */
-	//else if(send_pkt_counter == 32'h5F5E1000) begin //160000000
-	else if(send_pkt_counter == 32'hFFFFFFFF) begin
+	else if(send_pkt_counter == 32'h5F5E1000) begin //160000000
+	//else if(send_pkt_counter == 32'hFFFFFFFF) begin
 		state_next = HEARTBEAT_GEN_1;
 	end
 /*
@@ -685,6 +686,7 @@ module op_lut_process_sm
                 end
                 else if(is_logon)begin
                         fix_logon_trigger = 1;
+			fix_connect_start_next = 1;
                         state_next = WAIT_PREPROCESS_RDY;
                 end
                 else if(is_tcp_fin)begin
@@ -723,7 +725,7 @@ module op_lut_process_sm
            	//out_tdata_next = {{64'h1c6f65ac1d4fcafe}, {64'hf00d000108004500}, {64'h003c7a2640004006}, {64'h023c8c7452bd8c74}};
     //		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450308004500}, {64'h003c7a2640004006}, {64'h023c8c7452bd8c74}};
     		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h003c7a2640004006}, {64'h02378c7452bd8c74}};
-	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h04, 16'h4a}; 
+	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h08, 16'h4a}; 
     		out_tlast_next = 0;
     		out_tkeep_next  = 32'hffffffff;
     		state_next = SYN_GEN_2;
@@ -733,7 +735,7 @@ module op_lut_process_sm
            if(out_tready) begin
 	      	out_tvalid_next	= 1;
            	out_tdata_next = {{64'h52b9e704138a0000}, {64'h000000000000a002}, {64'h3908ec7c00000204}, {64'h05b40402080a020e}};
-	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h04, 16'h4a}; 
+	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h08, 16'h4a}; 
 		    out_tlast_next = 0;
 		    out_tkeep_next  = 32'hffffffff;
 		    state_next = SYN_GEN_3;
@@ -743,7 +745,7 @@ module op_lut_process_sm
            if(out_tready) begin
 	      	out_tvalid_next	= 1;
            	out_tdata_next = {{64'h677f000000000103}, {64'h0307000000000000}, {64'h0}, {64'h0}};
-	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h04, 16'h4a}; 
+	        out_tuser_next = {64'h0,16'h01,16'h01,8'h40, 8'h08, 16'h4a}; 
 		    out_tlast_next = 1;
 		    out_tkeep_next  = 32'hffc00000;
 		    state_next =  WAIT_PREPROCESS_RDY;
@@ -758,7 +760,7 @@ module op_lut_process_sm
 //	     if(out_tready)begin
 	      	out_tvalid_next	= 1;
            	
-	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h04, 16'h42}; 
+	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h08, 16'h42}; 
 	    	out_tlast_next = 0;
 
             out_tdata_next = ack_tdata;
@@ -779,7 +781,7 @@ module op_lut_process_sm
 /*
            	out_tdata_next = {{64'h52b7e704138a0000}, {64'h000000000000a002}, {64'h3908ec8100000204}, {64'h05b40402080a020e}};
 */
-	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h04, 16'h42}; 
+	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h08, 16'h42}; 
     		out_tlast_next = 0;
     //		out_tkeep_next  = 32'hffffffff;
 
@@ -802,7 +804,7 @@ module op_lut_process_sm
 	      	out_tvalid_next	= 1;
            	out_tdata_next = {{ts_value[15:0],ack_tdata[175:128]},{64'h0}, {64'h0}, {64'h0}};
            	
-	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h04, 16'h42}; 
+	        out_tuser_next = {64'h0,16'h02,16'h01,8'h40, 8'h08, 16'h42}; 
 		out_tlast_next = 1;
 		out_tkeep_next  = 32'hc0000000;
 		//state_next = DROP_PKT;
@@ -813,6 +815,7 @@ module op_lut_process_sm
 
 		if(is_report)begin
 			rd_preprocess_info = 1;
+			//recv_fix_report_next=1;			
 			state_next = WAIT_PREPROCESS_RDY;			
 		end
 
@@ -823,7 +826,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1; 
 		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00917a2840004006}, {64'h023c8c7452bd8c74}};
-                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h04, 16'h9f};
+                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h08, 16'h9f};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGON_GEN_2;
@@ -834,7 +837,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {{48'h52b9e704138a},ack_value,seq_value,{16'h8018}, {64'h0073b0b200000101},{16'h080a}, {ecr_value+1} , ts_value[31:16]};
-                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h04, 16'h9f};
+                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h08, 16'h9f};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGON_GEN_3;
@@ -845,7 +848,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {ts_value[15:0], {48'h383d4649582e}, {64'h342e3401393d3731},{64'h0133353d41013334},{64'h3d30310134393d43}};
-                out_tuser_next  = {64'h0,16'h04,16'h02,8'h40, 8'h04, 16'h9f};
+                out_tuser_next  = {64'h0,16'h04,16'h02,8'h40, 8'h08, 16'h9f};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGON_GEN_4;
@@ -859,7 +862,7 @@ module op_lut_process_sm
 				 {16'h323d}, {4'h3}, pkt_year[15:12], {4'h3}, pkt_year[11:8], {4'h3}, pkt_year[7:4], {4'h3}, pkt_year[3:0], {4'h3}, pkt_mon[7:4], {4'h3}, pkt_mon[3:0],
 				 {4'h3}, pkt_day[7:4], {4'h3}, pkt_day[3:0], {8'h2d}, {4'h3}, pkt_hour[7:4], {4'h3}, pkt_hour[3:0], {8'h3a}, {4'h3}, pkt_min[7:4], {4'h3}, pkt_min[3:0] ,
 				 {8'h3a}, {4'h3}, pkt_sec[7:4], {4'h3}, pkt_sec[3:0], {8'h2e}, {4'h3}, pkt_ms[11:8], {4'h3}, pkt_ms[7:4], {4'h3}, pkt_ms[3:0], {8'h01}};
-                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h04, 16'h9f};
+                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h08, 16'h9f};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGON_GEN_5;
@@ -870,7 +873,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {{64'h35363d4558454355}, {64'h544f520139383d30}, {64'h013130383d333001}, {64'h31303d3134300100}};
-                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h04, 16'h9f}; //{80,Begin of FIXchecksum,32}
+                out_tuser_next = {64'h0,16'h04,16'h02,8'h40, 8'h08, 16'h9f}; //{80,Begin of FIXchecksum,32}
                 out_tlast_next = 1;
                 out_tkeep_next  = 32'hfffffffe;
                 state_next = WAIT_PREPROCESS_RDY;
@@ -887,7 +890,7 @@ module op_lut_process_sm
 //	        out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h008d7a2640004006}, {64'h023c8c7452bd8c74}};
 //                out_tuser_next  = {64'h0,16'h27,16'h02,8'h01, 8'h01, 16'h9b};
 		out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00927a2640004006}, {64'h023c8c7452bd8c74}};
-                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0}; //1f
+                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h08,16'ha0}; //1f
 
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
@@ -899,7 +902,7 @@ module op_lut_process_sm
                 out_tvalid_next = 1;
                 out_tdata_next = {{48'h52b9e704138a},ack_value,seq_value,{16'h8018}, {64'h0073b0b200000101},{16'h080a}, {ecr_value+1} , ts_value[31:16]};
 //                out_tuser_next = {64'h0,16'h27,16'h02,8'h01, 8'h01, 16'h9b};
-                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0};
+                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h08,16'ha0};
 
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
@@ -913,7 +916,7 @@ module op_lut_process_sm
                 //out_tdata_next = {ts_value[15:0], {48'h383d4649582e}, {64'h342e3401393d3637},{64'h0133353d30013334},{64'h3d320134393d434c}};
                 //out_tuser_next= {64'h0,16'h27,16'h02,8'h01, 8'h01, 16'h9b};
 		out_tdata_next = {ts_value[15:0], {48'h383d4649582e}, {64'h342e3401393d3732},{64'h0133353d30013334},{64'h3d30303030303201}};
-                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0};
+                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h08,16'ha0};
 
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hfffffffff;
@@ -937,7 +940,7 @@ module op_lut_process_sm
  				 {4'h3}, pkt_year[7:4], {4'h3}, pkt_year[3:0], {4'h3}, pkt_mon[7:4], {4'h3}, pkt_mon[3:0],
                                  {4'h3}, pkt_day[7:4], {4'h3}, pkt_day[3:0], {8'h2d}, {4'h3}, pkt_hour[7:4], {4'h3}, pkt_hour[3:0], {8'h3a}, {4'h3}, pkt_min[7:4], {4'h3}, pkt_min[3:0] ,
                                  {8'h3a}, {4'h3}, pkt_sec[7:4], {4'h3}, pkt_sec[3:0], {8'h2e}};
-                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0};
+                out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h08,16'ha0};
 
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hfffffffff;
@@ -955,7 +958,7 @@ module op_lut_process_sm
 				   };
 
 //                out_tuser_next  = {64'h0,16'h27,16'h02,8'h01, 8'h01, 16'h9b};
-		        out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h04,16'ha0};
+		        out_tuser_next = {64'h0,16'h05,16'h02,8'h40,8'h08,16'ha0};
                 out_tlast_next = 1;
 //                out_tkeep_next  = 32'hffffffe0;
 		        out_tkeep_next  =   32'hffffffff;
@@ -971,7 +974,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00897a2640004006}, {64'h023c8c7452bd8c74}};
-                out_tuser_next  = {64'h0,16'h06,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next  = {64'h0,16'h06,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = HEARTBEAT_GEN_2;
@@ -986,7 +989,7 @@ module op_lut_process_sm
                 //out_tdata_next[63:0]    = {{16'h080a}, {ecr_value+1}, ts_value[31:16]};
                 //out_tdata_next = {{64'h52b9e704138a0000}, {64'h000000000000a002}, {64'h3908ec8100000204}, {64'h05b40402080a020e}};
                 out_tdata_next = {{48'h52b9e704138a},ack_value,seq_value,{16'h8018}, {64'h0073b0b200000101},{16'h080a}, {ecr_value+1} , ts_value[31:16]};
-                out_tuser_next = {64'h0,16'h06,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next = {64'h0,16'h06,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = HEARTBEAT_GEN_3;
@@ -1000,7 +1003,7 @@ module op_lut_process_sm
                 out_tdata_next = {ts_value[15:0], {48'h383d4649582e}, {64'h342e3401393d3633},{64'h0133353d30013334},{64'h3d30303030303001}};
 
                 heartB_seq_num_next = heartB_seq_num_next +4'h1 ;
-                out_tuser_next= {64'h0,16'h06,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next= {64'h0,16'h06,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hfffffffff;
                 state_next =  HEARTBEAT_GEN_4;
@@ -1022,7 +1025,7 @@ module op_lut_process_sm
                                  {4'h3}, pkt_day[7:4], {4'h3}, pkt_day[3:0], {8'h2d}, {4'h3}, pkt_hour[7:4], {4'h3}, pkt_hour[3:0], {8'h3a}, {4'h3}, pkt_min[7:4], {4'h3}, pkt_min[3:0] ,
                                  {8'h3a}, {4'h3}, pkt_sec[7:4], {4'h3}, pkt_sec[3:0], {8'h2e}};
 
-                out_tuser_next = {64'h0,16'h06,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next = {64'h0,16'h06,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hfffffffff;
                 state_next =  HEARTBEAT_GEN_5;
@@ -1038,7 +1041,7 @@ module op_lut_process_sm
                                       {64'h58454355544f5201},{56'h31303d32303801},8'h0,64'h0
                                    };
 
-                out_tuser_next  = {64'h0,16'h06,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next  = {64'h0,16'h06,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 1;
                 out_tkeep_next  = 32'hfffffe00;
                 state_next =  WAIT_PREPROCESS_RDY;
@@ -1054,7 +1057,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {{64'h1402ec6d90100253}, {64'h554d450008004500}, {64'h00897a2840004006}, {64'h023c8c7452bd8c74}};
-                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGOUT_GEN_2;
@@ -1065,7 +1068,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {{48'h52b9e704138a},ack_value,seq_value,{16'h8018}, {64'h0073b0b200000101},{16'h080a}, {ecr_value+1} , ts_value[31:16]};
-                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGOUT_GEN_3;
@@ -1076,7 +1079,7 @@ module op_lut_process_sm
            if(out_tready) begin
                 out_tvalid_next = 1;
                 out_tdata_next = {ts_value[15:0], {48'h383d4649582e}, {64'h342e3401393d3633},{64'h0133353d35013334},{64'h3d30303030303201}};
-                out_tuser_next  = {64'h0,16'h07,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next  = {64'h0,16'h07,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGOUT_GEN_4;
@@ -1092,7 +1095,7 @@ module op_lut_process_sm
                                  {4'h3}, pkt_day[7:4], {4'h3}, pkt_day[3:0], {8'h2d}, {4'h3}, pkt_hour[7:4], {4'h3}, pkt_hour[3:0], {8'h3a}, {4'h3}, pkt_min[7:4], {4'h3}, pkt_min[3:0] ,
                                  {8'h3a}, {4'h3}, pkt_sec[7:4], {4'h3}, pkt_sec[3:0], {8'h2e}};
 
-                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h04, 16'h97};
+                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h08, 16'h97};
                 out_tlast_next = 0;
                 out_tkeep_next  = 32'hffffffff;
                 state_next = LOGOUT_GEN_5;
@@ -1106,7 +1109,7 @@ module op_lut_process_sm
                                         {4'h3}, pkt_ms[11:8], {4'h3}, pkt_ms[7:4], {4'h3}, pkt_ms[3:0], {8'h01},{8'h35},
                                         {64'h363d455845435554},{64'h4f520131303d3230},{16'h3801},{8'h0},{64'h0}
                                    };
-                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h04, 16'h97}; //{80,Begin of FIXchecksum,32}
+                out_tuser_next = {64'h0,16'h07,16'h02,8'h40, 8'h08, 16'h97}; //{80,Begin of FIXchecksum,32}
                 out_tlast_next = 1;
                 out_tkeep_next  = 32'hfffffe00;
                 state_next = WAIT_PREPROCESS_RDY;
@@ -1344,7 +1347,7 @@ module op_lut_process_sm
              end
 */
 //		 rd_preprocess_done <= rd_preprocess_done_next;
-	         if(fix_connect_start)begin
+	         if(fix_server_connected)begin
 	                 if(fix_logout_sended||fix_logon_sended||fix_heartb_sended||fix_testReq_hearb_sended)begin
 	                       send_pkt_counter <= 0 ;
 	                 end
