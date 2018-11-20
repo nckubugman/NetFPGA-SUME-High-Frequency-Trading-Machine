@@ -194,6 +194,11 @@ module op_lut_process_sm
    output reg  rd_preprocess_done,
 //   input[216:0]                         order_index_out,
    input [240:0]			  order_index_out,
+
+
+   input  resend_mode_one ,
+   input  resend_mode_two ,
+   input  resend_mode_three,
    // misc
    input reset,
    input clk
@@ -590,6 +595,10 @@ module op_lut_process_sm
 	else if(send_pkt_counter == 32'h5F5E1000) begin //160000000
 	//else if(send_pkt_counter == 32'hFFFFFFFF) begin
 		state_next = HEARTBEAT_GEN_1;
+	end
+
+	else if(resend_mode_one||resend_mode_two||resend_mode_three)begin
+		pkt_sent_to_cpu_lpm_miss = 1 ;
 	end
 /*
 	else begin
@@ -1297,7 +1306,7 @@ module op_lut_process_sm
          heartB_seq_num    <= 'h0;
     	 is_send_logout    <= 1'b0;
     	 osnt_test	   <= 0;
-    	 pkt_sent_to_cpu_lpm_miss <= 0;
+    	 //pkt_sent_to_cpu_lpm_miss <= 0;
     	 fix_connect_start <= 0;
          rd_preprocess_done_sm <= 1;
 	 //rd_preprocess_done <= 1;
@@ -1324,7 +1333,7 @@ module op_lut_process_sm
     	 send_fix_logout   <= send_fix_logout_next;
     	 heartB_seq_num    <= heartB_seq_num_next;
     	 is_send_logout    <= is_send_logout_next;
-    	 pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
+    	 //pkt_sent_to_cpu_lpm_miss<= send_pkt_counter;
     	 fix_connect_start  <= fix_connect_start_next;
          rd_preprocess_done_sm <= rd_preprocess_done_sm_next;
 	 //rd_preprocess_done  <= rd_preprocess_done_next;

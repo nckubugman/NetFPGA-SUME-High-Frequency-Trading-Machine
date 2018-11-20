@@ -627,7 +627,7 @@ module fix_generator
               .resend_mode_one(resend_mode_one),
               .resend_mode_two(resend_mode_two),
               .resend_mode_three(resend_mode_three),
-              //.is_resend(is_resend),
+              .is_resend(is_resend),
               .cpu2ip_overwrite_fix_seq_num_reg(cpu2ip_overwrite_fix_seq_num_reg),
 
               .reset(~axis_resetn),

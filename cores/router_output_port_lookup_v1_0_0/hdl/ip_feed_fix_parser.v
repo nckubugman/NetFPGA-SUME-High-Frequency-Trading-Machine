@@ -108,10 +108,10 @@ module ip_feed_fix_parser
     output				tcp_logon_handshake_trigger,
 
 
-    
+   
     output [31:0]			resend_begin_fix_seq_num,
     output [31:0]			resend_end_fix_seq_num,
-
+   
    //---- FIX LOGOUT TRIGGER
     //output reg[31:0]			 ip2cpu_fix_logout_trigger_reg,
 
@@ -146,8 +146,10 @@ module ip_feed_fix_parser
     output                             is_fix_logon,
     output                             is_fix_report,
     // --- wade resend seq num
+/*
     output [31:0]		   fix_resend_num_begin,
     output [31:0]		   fix_resend_num_end,
+*/
     //output                         resend_req,
     input                          resend_ack,
     
@@ -167,7 +169,6 @@ module ip_feed_fix_parser
     output			    seq_value,
     output			    ts_val,
     output			    ecr_val, 
-    input			    send_one,
     input			    is_send_pkt,
     output			    rd_preprocess_done,
 //    input [216:0]                         order_index_out,
@@ -261,9 +262,13 @@ module ip_feed_fix_parser
    wire					is_order_pkt ;
    wire					rd_preprocess_done;
 
-
    wire					is_session_reject;
    wire					is_order_cancel_reject;
+
+
+   wire					resend_mode_one;
+   wire 				resend_mode_two;
+   wire					resend_mode_three;
 
    // Control signals
    assign s_axis_tready = ~in_fifo_nearly_full ;
@@ -274,7 +279,7 @@ module ip_feed_fix_parser
    
    /* The size of this fifo has to be large enough to fit the previous modules' headers
     * and the ethernet header */
-   fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(15))
+   fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(10))
       input_fifo
         (.din ({s_axis_tlast, s_axis_tuser, s_axis_tkeep, s_axis_tdata}),	// Data in
          .wr_en (s_axis_tvalid & ~in_fifo_nearly_full),				// Write enable
@@ -538,10 +543,14 @@ module ip_feed_fix_parser
 	 .is_connect_pkt(is_connect_pkt),
 	 .is_order_pkt(is_order_pkt),
 
-	 .send_one(send_one),
 	 .is_send_pkt(is_send_pkt),
 	 .rd_preprocess_done(rd_preprocess_done),
          .order_index_out(order_index_out),
+
+	 .resend_mode_one (resend_mode_one),
+	 .resend_mode_two (resend_mode_two),
+	 .resend_mode_three(resend_mode_three),
+
          // misc
          .reset                         (~axis_resetn),
          .clk                           (axis_aclk)
@@ -621,9 +630,10 @@ module ip_feed_fix_parser
 	  .is_session_reject	     (is_session_reject),
 	  .is_order_cancel_reject    (is_order_cancel_reject),
 
-
+/*
           .resend_begin		     (fix_resend_num_begin),
 	  .resend_end		     (fix_resend_num_end),
+*/
 	  .resend_ack		     (resend_ack),
 	  .resend_mode_one	     (resend_mode_one),
 	  .resend_mode_two	     (resend_mode_two),

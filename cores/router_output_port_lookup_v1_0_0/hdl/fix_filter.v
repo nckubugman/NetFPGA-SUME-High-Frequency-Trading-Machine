@@ -34,8 +34,10 @@
      output			   is_order_cancel_reject,
  
 //     output reg [31:0]             recv_fix_server_seq, // parse recieve fix server sequence number
+/*
      output reg [31:0]             resend_begin,
      output reg [31:0]		   resend_end,
+*/
      output reg [31:0]             resend_num,
      //output reg                    resend_req,  
      input                         resend_ack,
@@ -133,6 +135,9 @@
      reg			    resend_mode_three_reg;
 
      reg			    resend_num_wr;
+
+     reg [31:0]			    resend_begin;
+     reg [31:0]			    resend_end;
 /*
      reg [7:0]			   resend_end_add_reg_one;
      reg [7:0]			   resend_end_add_reg_two;
@@ -993,11 +998,13 @@ always @(posedge clk) begin
                 resend_end_fix_seq_num   <= resend_end;
                 resend_mode_two          <= resend_mode_two_reg;
                 if(resend_end==0&&resend_mode_one_reg)begin
-                        resend_mode_three <=resend_mode_one_reg;
+                        //resend_mode_three <=resend_mode_one_reg;
+			resend_mode_three <= 1;
                         resend_mode_one   <= 0;
                 end
                 else begin
-                        resend_mode_one  <= resend_mode_one_reg;
+			resend_mode_one   <= 1;
+                        //resend_mode_one  <= resend_mode_one_reg;
                         resend_mode_three <= 0;
                 end
 	end
@@ -1036,7 +1043,7 @@ always @(posedge clk) begin
 		//fix_logout_signal<=1'b0;
 		//fix_logout_trigger <=1'b0;
 		resend_non_dup <= 1'b0;
-                end_state        <= 1'b0;
+                
 		resend_mux    <= 0;
 		resend_pkt_tdata <= 0;
 		resend_pkt_tdata_two<=0;
@@ -1084,6 +1091,7 @@ always @(posedge clk) begin
 		resend_mode_one_reg    <= 0;
 		resend_mode_two_reg    <= 0;		
 		resend_num_wr 	       <= 0;
+		end_state	       <= 0;
 /*
 		resend_end_add_reg_one<=0;
 		resend_end_add_reg_two<=0;

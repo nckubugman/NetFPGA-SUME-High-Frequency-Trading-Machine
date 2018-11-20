@@ -27,6 +27,7 @@ module fix_seq_number_counter_sm
    input [31:0]                       fix_resend_num_end,
    output reg                         resend_ack,
 //   input                            resend_req,
+   input			      is_resend,
    input                              resend_mode_one,
    input                              resend_mode_two,
    input                              resend_mode_three,
@@ -157,6 +158,13 @@ module fix_seq_number_counter_sm
    reg[NUM_STATES-1:0]     state;
    reg[NUM_STATES-1:0]     state_next;
 
+   reg			   resend_set_count;
+   reg	[31:0]		   resend_set_reg ;
+   reg			   resend_set_flag ;
+
+   wire [3:0] hundred_thousand,ten_thousand,thousand, hundred, ten, one;
+
+
    fallthrough_small_fifo #(.WIDTH(24), .MAX_DEPTH_BITS(6))
       fix_checksum_fifo
         (.din ({msg_seq_num_reg_5, msg_seq_num_reg_4, msg_seq_num_reg_3, msg_seq_num_reg_2, msg_seq_num_reg_1, msg_seq_num_reg_0}),
@@ -171,6 +179,11 @@ module fix_seq_number_counter_sm
          .clk (clk)
          );
 
+
+ binary_to_bcd_seq reset_seq(.binary(resend_set_reg),.hundred_thousand(hundred_thousand),.ten_thousand(ten_thousand), .thousand(thousand), .hundred(hundred), .ten(ten), .one(one));
+
+
+
    localparam NUM_STATES          = 16;
    localparam WAIT                = 1;
    localparam FIX_PKT_SEQ_NUM     = 2;
@@ -183,10 +196,12 @@ module fix_seq_number_counter_sm
 
 assign fix_seq_num_vld = !empty;
 
-always@(tlast,tuser[35:32],tvalid)begin
+//always@(tlast,tuser[35:32],tvalid)begin
+  always@(*)begin
 //	resend_ack_next = 1'b0;
 	case({seq_num_out_word_IP_DST_HI,tuser[35:32],tvalid})
 		6'b100101:begin
+/*
 		   if(resend_mode_one||resend_mode_two||resend_mode_three)begin
 
                         msg_seq_num_0 = msg_seq_num_reg_0;
@@ -197,7 +212,7 @@ always@(tlast,tuser[35:32],tvalid)begin
                         msg_seq_num_5 = msg_seq_num_reg_5;
                         msg_seq_num_6 = msg_seq_num_reg_6;
                         msg_seq_num_7 = msg_seq_num_reg_7;
-
+*/
 /*
 	              resend_ack_next        = 1'b1;
 	              msg_seq_num_0 = fix_resend_num_begin[3:0];
@@ -210,8 +225,8 @@ always@(tlast,tuser[35:32],tvalid)begin
 	              msg_seq_num_7 = fix_resend_num_begin[31:28];
 */
 
-		   end
-		   else begin
+//		   end
+//		   else begin
 		      msg_seq_num_0 = msg_seq_num_reg_0 + 4'd1;
    		      msg_seq_num_1 = msg_seq_num_reg_1;
 		      msg_seq_num_2 = msg_seq_num_reg_2;
@@ -220,7 +235,7 @@ always@(tlast,tuser[35:32],tvalid)begin
 		      msg_seq_num_5 = msg_seq_num_reg_5;
 		      msg_seq_num_6 = msg_seq_num_reg_6;
 		      msg_seq_num_7 = msg_seq_num_reg_7; 
-		  end
+//		  end
 		end
 		default : begin
                         msg_seq_num_0 = msg_seq_num_reg_0;
@@ -233,81 +248,54 @@ always@(tlast,tuser[35:32],tvalid)begin
                         msg_seq_num_7 = msg_seq_num_reg_7;
 
 		end
-/*
-		6'b000101:begin
-			msg_seq_num_0 = msg_seq_num_reg_0;
-			msg_seq_num_1 = msg_seq_num_reg_1;
-                        msg_seq_num_2 = msg_seq_num_reg_2;
-                        msg_seq_num_3 = msg_seq_num_reg_3;
-                        msg_seq_num_4 = msg_seq_num_reg_4;
-                        msg_seq_num_5 = msg_seq_num_reg_5;
-                        msg_seq_num_6 = msg_seq_num_reg_6;
-                        msg_seq_num_7 = msg_seq_num_reg_7;
-		end
-		6'b100011:begin
-			msg_seq_num_0 = msg_seq_num_reg_0;
-                        msg_seq_num_1 = msg_seq_num_reg_1;
-                        msg_seq_num_2 = msg_seq_num_reg_2;
-                        msg_seq_num_3 = msg_seq_num_reg_3;
-                        msg_seq_num_4 = msg_seq_num_reg_4;
-                        msg_seq_num_5 = msg_seq_num_reg_5;
-                        msg_seq_num_6 = msg_seq_num_reg_6;
-                        msg_seq_num_7 = msg_seq_num_reg_7;
-		end
-		6'b000011:begin
-			msg_seq_num_0 = msg_seq_num_reg_0;
-                        msg_seq_num_1 = msg_seq_num_reg_1;
-                        msg_seq_num_2 = msg_seq_num_reg_2;
-                        msg_seq_num_3 = msg_seq_num_reg_3;
-                        msg_seq_num_4 = msg_seq_num_reg_4;
-                        msg_seq_num_5 = msg_seq_num_reg_5;
-                        msg_seq_num_6 = msg_seq_num_reg_6;
-                        msg_seq_num_7 = msg_seq_num_reg_7;			
-		end
-		6'b000001:begin
-                        msg_seq_num_0 = msg_seq_num_reg_0;
-                        msg_seq_num_1 = msg_seq_num_reg_1;
-                        msg_seq_num_2 = msg_seq_num_reg_2;
-                        msg_seq_num_3 = msg_seq_num_reg_3;
-                        msg_seq_num_4 = msg_seq_num_reg_4;
-                        msg_seq_num_5 = msg_seq_num_reg_5;
-                        msg_seq_num_6 = msg_seq_num_reg_6;
-                        msg_seq_num_7 = msg_seq_num_reg_7;
-		end
-*/
 	endcase
 /*
-            if(msg_seq_num_0 == 4'd10) begin
-                        msg_seq_num_0 <= 4'd0;
-                        msg_seq_num_1 <= msg_seq_num_1 + 4'd1;
-            end
-            if(msg_seq_num_1 == 4'd10) begin
-                        msg_seq_num_1 <= 4'd0;
-                        msg_seq_num_2 <= msg_seq_num_2 + 4'd1;
-            end
-            if(msg_seq_num_2 == 4'd10) begin
-                        msg_seq_num_2 <= 4'd0;
-                        msg_seq_num_3 <= msg_seq_num_3 + 4'd1;
-            end
-            if(msg_seq_num_3 == 4'd10) begin
-                        msg_seq_num_3 <= 4'd0;
-                        msg_seq_num_4 <= msg_seq_num_4 + 4'd1;
-            end
-            if(msg_seq_num_4 == 4'd10) begin
-                        msg_seq_num_4 <= 4'd0;
-                        msg_seq_num_5 <= msg_seq_num_5 + 4'd1;
-            end
-            if(msg_seq_num_5 == 4'd10) begin
-                        msg_seq_num_5 <= 4'd0;
-                        msg_seq_num_6 <= msg_seq_num_6 + 4'd1;
-            end
-            if(msg_seq_num_6 == 4'd10) begin
-                        msg_seq_num_6 <= 4'd0;
-                        msg_seq_num_7 <= msg_seq_num_7 + 4'd1;
-            end
-            if(msg_seq_num_7 == 4'd10) begin
-                       msg_seq_num_7 <= 4'd0;
-            end
+                    if(resend_mode_one)begin
+                       msg_seq_num_0 = fix_resend_num_begin[3:0];
+                       msg_seq_num_1 = fix_resend_num_begin[7:4];
+                       msg_seq_num_2 = fix_resend_num_begin[11:8];
+                       msg_seq_num_3 = fix_resend_num_begin[15:12];
+                       msg_seq_num_4 = fix_resend_num_begin[19:16];
+                       msg_seq_num_5 = fix_resend_num_begin[23:20];
+                       msg_seq_num_6 = fix_resend_num_begin[27:24];
+                       msg_seq_num_7 = fix_resend_num_begin[31:28];
+                       resend_ack    = 1'b1;
+                    end
+                    else if(resend_mode_two)begin
+                       msg_seq_num_0 = fix_resend_num_begin[3:0];
+                       msg_seq_num_1 = fix_resend_num_begin[7:4];
+                       msg_seq_num_2 = fix_resend_num_begin[11:8];
+                       msg_seq_num_3 = fix_resend_num_begin[15:12];
+                       msg_seq_num_4 = fix_resend_num_begin[19:16];
+                       msg_seq_num_5 = fix_resend_num_begin[23:20];
+                       msg_seq_num_6 = fix_resend_num_begin[27:24];
+                       msg_seq_num_7 = fix_resend_num_begin[31:28];
+
+                       resend_end_0 = fix_resend_num_end[3:0];
+                       resend_end_1 = fix_resend_num_end[7:4];
+                       resend_end_2 = fix_resend_num_end[11:8];
+                       resend_end_3 = fix_resend_num_end[15:12];
+                       resend_end_4 = fix_resend_num_end[19:16];
+                       resend_end_5 = fix_resend_num_end[23:20];
+                       resend_end_6 = fix_resend_num_end[27:24];
+                       resend_end_7 = fix_resend_num_end[31:28];
+
+                       resend_ack    = 1'b1;
+
+                    end
+                    else if(resend_mode_three)begin
+                      msg_seq_num_0 = fix_resend_num_begin[3:0];
+                      msg_seq_num_1 = fix_resend_num_begin[7:4];
+                      msg_seq_num_2 = fix_resend_num_begin[11:8];
+                      msg_seq_num_3 = fix_resend_num_begin[15:12];
+                      msg_seq_num_4 = fix_resend_num_begin[19:16];
+                      msg_seq_num_5 = fix_resend_num_begin[23:20];
+                      msg_seq_num_6 = fix_resend_num_begin[27:24];
+                      msg_seq_num_7 = fix_resend_num_begin[31:28];
+                      resend_ack      = 1'b1;
+                    end
+
+
 */
 end
 
@@ -520,6 +508,10 @@ always @(posedge clk) begin
            resend_flag       <= 'b0;
            seq_hold          <= 'b0;
            wr_delay          <= 0;
+
+	   resend_set_count <= 0;
+	   resend_set_reg   <= 32'b0;
+	   resend_set_flag  <= 0;
       end
       else begin
             //if(tvalid||wr_delay)begin
@@ -551,6 +543,8 @@ always @(posedge clk) begin
               resend_end_reg_5  <= resend_end_5 ;
               resend_end_reg_6  <= resend_end_6 ;
               resend_end_reg_7  <= resend_end_7 ;
+
+	      resend_set_count  <= cpu2ip_overwrite_fix_seq_num_reg;
 
            //   resend_ack        <= resend_ack_next;
            //end
@@ -643,8 +637,12 @@ always @(posedge clk) begin
               msg_seq_num_reg_6 <= fix_resend_num_begin[27:24];
               msg_seq_num_reg_7 <= fix_resend_num_begin[31:28];
             end
+	    
 */
-
+	    if(resend_set_count=='b0&&cpu2ip_overwrite_fix_seq_num_reg)begin
+		      resend_set_reg    <= cpu2ip_overwrite_fix_seq_num_reg;
+		      resend_set_flag   <= 1;
+	    end
             if(msg_seq_num_reg_0 == 4'd10)begin
                         msg_seq_num_reg_0 <= 4'd0;
                         msg_seq_num_reg_1 <= msg_seq_num_reg_1 + 4'd1;
@@ -681,6 +679,15 @@ always @(posedge clk) begin
            if(tlast&& tvalid)begin
                     wr_delay   <= 1;
                         //wr_in_fifo <= 1;
+		    if(resend_set_flag)begin
+		       msg_seq_num_reg_0 <= one;
+		       msg_seq_num_reg_1 <= ten;
+		       msg_seq_num_reg_2 <= hundred;
+		       msg_seq_num_reg_3 <= thousand;
+		       msg_seq_num_reg_4 <= ten_thousand;
+		       msg_seq_num_reg_5 <= hundred_thousand;
+		    end
+
 	            if(resend_mode_one)begin
 	               msg_seq_num_reg_0 <= fix_resend_num_begin[3:0];
 	               msg_seq_num_reg_1 <= fix_resend_num_begin[7:4];
@@ -733,6 +740,7 @@ always @(posedge clk) begin
            end
            if(wr_delay)begin
                         wr_in_fifo <= 1;
+			resend_set_flag <= 0 ;
            end
            else begin
                         wr_in_fifo <= 0;

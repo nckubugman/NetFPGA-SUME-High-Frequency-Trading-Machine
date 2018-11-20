@@ -446,9 +446,10 @@ module router_output_port_lookup
    wire				is_order_pkt;
 //   wire [31:0]                 fix_server_seq;
 
+/*
    wire [31:0]		fix_resend_num_begin;
    wire [31:0]		fix_resend_num_end;
-
+*/
   // ----yifang counter
    wire	[31:0]	is_op_pkt_counter;
    wire [31:0]	is_og_pkt_counter;
@@ -638,8 +639,10 @@ module router_output_port_lookup
 
      // --- wade resend seq num
      //.resend_num(resend_num),
+/*
      .fix_resend_num_begin(fix_resend_num_begin),
      .fix_resend_num_end(fix_resend_num_end),
+*/
      //.resend_req(resend_req),
      .resend_ack(resend_ack),
 
@@ -658,7 +661,6 @@ module router_output_port_lookup
     .ts_val 	(ts_val),
     .ecr_val	(ecr_val),
 
-    .send_one    (send_one),
     .is_send_pkt (is_send_pkt),
     .rd_preprocess_done(rd_preprocess_done),
     .order_index_out(order_index_out),
@@ -749,8 +751,8 @@ module router_output_port_lookup
      .ack_sended(ack_sended),
      .is_fix_logon(is_fix_logon),
      .is_fix_report(is_fix_report),
-     .fix_resend_num_begin(fix_resend_num_begin),
-     .fix_resend_num_end(fix_resend_num_end),
+     .fix_resend_num_begin(resend_begin_fix_seq_num),
+     .fix_resend_num_end(resend_end_fix_seq_num),
      //.resend_req(resend_req),
      .resend_ack(resend_ack),
 
@@ -769,7 +771,6 @@ module router_output_port_lookup
     .ts_val(ts_val),
     .ecr_val(ecr_val),
 
-    .send_one(send_one),
     .is_send_pkt(is_send_pkt),
     .rd_preprocess_done(rd_preprocess_done),
    
